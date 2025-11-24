@@ -2,10 +2,16 @@ import React from 'react';
 import { Hero } from '../components/Hero';
 import { Link } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const Home: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="Home"
+        description="Hydroforce Engineering specializes in precision manufacturing, hydraulic solutions, powder metallurgy, CNC machining, and die casting. 30+ years of excellence."
+        keywords={['Hydraulic Cylinders', 'Powder Metallurgy', 'CNC Machining', 'Die Casting', 'Hydroforce Engineering', 'Manufacturing']}
+      />
       <Hero
         title="Precision in Metal, Power in Hydraulics"
         subtitle="Advanced technologies in powder metallurgy, CNC machining, die casting, and hydraulics."
