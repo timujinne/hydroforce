@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
+import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 
@@ -23,7 +24,7 @@ describe('Layout Component', () => {
         <div>Content</div>
       </Layout>
     );
-    const logo = screen.getAllByAlt('Hydroforce Engineering')[0];
+    const logo = screen.getAllByAltText('Hydroforce Engineering')[0];
     expect(logo).toBeInTheDocument();
   });
 
@@ -33,8 +34,8 @@ describe('Layout Component', () => {
         <div>Content</div>
       </Layout>
     );
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Quality')).toBeInTheDocument();
+    expect(screen.getAllByText('Home')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Quality')[0]).toBeInTheDocument();
   });
 
   it('renders Hydraulics dropdown menu items', () => {
@@ -43,9 +44,9 @@ describe('Layout Component', () => {
         <div>Content</div>
       </Layout>
     );
-    expect(screen.getByText('Hydraulic Cylinders')).toBeInTheDocument();
-    expect(screen.getByText('Motors & Pumps')).toBeInTheDocument();
-    expect(screen.getByText('Specification Form')).toBeInTheDocument();
+    expect(screen.getAllByText('Hydraulic Cylinders')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Motors & Pumps')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Specification Form')[0]).toBeInTheDocument();
   });
 
   it('renders Metal Parts dropdown menu items', () => {
@@ -54,9 +55,9 @@ describe('Layout Component', () => {
         <div>Content</div>
       </Layout>
     );
-    expect(screen.getByText('Powder Metallurgy')).toBeInTheDocument();
-    expect(screen.getByText('Die Casting')).toBeInTheDocument();
-    expect(screen.getByText('Machining')).toBeInTheDocument();
+    expect(screen.getAllByText('Powder Metallurgy')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Die Casting')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Machining')[0]).toBeInTheDocument();
   });
 
   it('toggles mobile menu when clicking menu button', () => {
@@ -165,7 +166,9 @@ describe('Layout Component', () => {
     );
     const nameInput = screen.getByLabelText('Name') as HTMLInputElement;
     const emailInput = screen.getByLabelText('Email') as HTMLInputElement;
-    const messageInput = screen.getByLabelText('Message') as HTMLTextAreaElement;
+    const messageInput = screen.getByLabelText(
+      'Message'
+    ) as HTMLTextAreaElement;
 
     expect(nameInput.required).toBe(true);
     expect(emailInput.required).toBe(true);

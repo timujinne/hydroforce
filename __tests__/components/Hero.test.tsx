@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -77,9 +78,7 @@ describe('Hero Component', () => {
       ...mockProps,
       overlayType: 'dark',
     };
-    const { container } = renderWithRouter(
-      <Hero {...propsWithDarkOverlay} />
-    );
+    const { container } = renderWithRouter(<Hero {...propsWithDarkOverlay} />);
     const section = container.querySelector('section');
     expect(section?.style.backgroundImage).toContain('rgba(2, 24, 34, 0.85)');
   });
@@ -89,9 +88,7 @@ describe('Hero Component', () => {
       ...mockProps,
       overlayType: 'light',
     };
-    const { container } = renderWithRouter(
-      <Hero {...propsWithLightOverlay} />
-    );
+    const { container } = renderWithRouter(<Hero {...propsWithLightOverlay} />);
     const section = container.querySelector('section');
     expect(section?.style.backgroundImage).toContain(
       'rgba(248, 249, 250, 0.85)'
@@ -103,9 +100,7 @@ describe('Hero Component', () => {
       ...mockProps,
       overlayType: 'light',
     };
-    const { container } = renderWithRouter(
-      <Hero {...propsWithLightOverlay} />
-    );
+    const { container } = renderWithRouter(<Hero {...propsWithLightOverlay} />);
     const titleContainer = container.querySelector('.max-w-4xl');
     expect(titleContainer?.className).toContain('text-primary');
   });

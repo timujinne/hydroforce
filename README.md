@@ -14,11 +14,13 @@ Modern React SPA for Hydroforce Engineering - a company specializing in hydrauli
 **Prerequisites:** Node.js 18+ and npm
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Set up environment (optional):**
+
    ```bash
    cp .env.local.example .env.local
    # Edit .env.local and add your GEMINI_API_KEY
@@ -33,16 +35,19 @@ Modern React SPA for Hydroforce Engineering - a company specializing in hydrauli
 ## 📦 Available Scripts
 
 ### Development
+
 - `npm run dev` - Start development server on port 3000
 - `npm run build` - Build production bundle
 - `npm run preview` - Preview production build locally
 
 ### Testing
+
 - `npm test` - Run tests in watch mode
 - `npm run test:ui` - Run tests with Vitest UI
 - `npm run test:coverage` - Run tests with coverage report
 
 ### Code Quality
+
 - `npm run lint` - Lint code with ESLint
 - `npm run lint:fix` - Fix linting errors automatically
 - `npm run format` - Format code with Prettier
@@ -75,6 +80,7 @@ npm run test:ui
 ```
 
 Coverage thresholds:
+
 - Lines: 70%
 - Functions: 70%
 - Branches: 70%
@@ -85,7 +91,9 @@ Coverage thresholds:
 This project uses GitHub Actions for continuous integration and deployment.
 
 ### Continuous Integration (CI)
+
 Runs on every push and pull request:
+
 - ✅ Code formatting check (Prettier)
 - ✅ Linting (ESLint)
 - ✅ Type checking (TypeScript)
@@ -94,6 +102,7 @@ Runs on every push and pull request:
 - ✅ Coverage reporting
 
 ### Continuous Deployment (CD)
+
 Automatically deploys to GitHub Pages on push to `main` branch.
 
 See [CI-CD-PROPOSAL.md](CI-CD-PROPOSAL.md) for detailed documentation.
@@ -107,12 +116,15 @@ See [CI-CD-PROPOSAL.md](CI-CD-PROPOSAL.md) for detailed documentation.
 ## 🚢 Deployment
 
 ### GitHub Pages
+
 Automatic deployment on push to `main`:
+
 1. Ensure GitHub Pages is enabled in repository settings
 2. Push to `main` branch
 3. GitHub Actions will automatically build and deploy
 
 ### Manual Deployment
+
 ```bash
 npm run build
 # Upload dist/ folder to your hosting provider
@@ -146,6 +158,7 @@ All PRs must pass CI checks before merging.
 ## 📞 Contact
 
 **Hydroforce Engineering**
+
 - Address: Valge 13, Tallinn, 11415, Estonia
 - Phone: +372 5669 94 64
 - Email: office@hydroforce.ee

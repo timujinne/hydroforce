@@ -29,6 +29,7 @@ const base = mode === 'production' ? '/your-repo-name/' : '/';
 Замените `your-repo-name` на имя вашего репозитория.
 
 **Для кастомного домена** установите:
+
 ```typescript
 const base = '/';
 ```
@@ -36,10 +37,12 @@ const base = '/';
 ### Шаг 4: Запустите деплой
 
 Деплой происходит автоматически при:
+
 - Push в ветку `main`
 - Ручном запуске workflow
 
 Для ручного запуска:
+
 1. Перейдите в **Actions**
 2. Выберите **Deploy to GitHub Pages**
 3. Нажмите **Run workflow**
@@ -47,6 +50,7 @@ const base = '/';
 ## Проверка деплоя
 
 После успешного деплоя ваше приложение будет доступно по адресу:
+
 ```
 https://<username>.github.io/<repository>/
 ```
@@ -56,11 +60,13 @@ https://<username>.github.io/<repository>/
 ### Vercel
 
 1. Установите Vercel CLI:
+
    ```bash
    npm i -g vercel
    ```
 
 2. Деплой:
+
    ```bash
    vercel
    ```
@@ -73,11 +79,13 @@ https://<username>.github.io/<repository>/
 ### Netlify
 
 1. Установите Netlify CLI:
+
    ```bash
    npm i -g netlify-cli
    ```
 
 2. Деплой:
+
    ```bash
    netlify deploy
    ```
@@ -92,11 +100,13 @@ https://<username>.github.io/<repository>/
 ### GitHub Pages
 
 1. Добавьте файл `CNAME` в директорию `public/`:
+
    ```
    yourdomain.com
    ```
 
 2. Настройте DNS записи у вашего регистратора домена:
+
    ```
    A     @    185.199.108.153
    A     @    185.199.109.153
