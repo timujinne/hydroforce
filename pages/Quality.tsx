@@ -6,10 +6,16 @@ import { SEO } from '../components/SEO';
 export const Quality: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Quality Control"
         description="Our integrated quality management system ensures precision and reliability. ISO 9001:2015 certified. Advanced measurement and testing facilities."
-        keywords={['Quality Control', 'ISO 9001', 'CMM Inspection', 'Material Analysis', 'Hydroforce Engineering']}
+        keywords={[
+          'Quality Control',
+          'ISO 9001',
+          'CMM Inspection',
+          'Material Analysis',
+          'Hydroforce Engineering',
+        ]}
       />
       {/* Hero Section - Image Updated */}
       <Hero

@@ -6,10 +6,17 @@ import { SEO } from '../components/SEO';
 export const PowderMetallurgy: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Powder Metallurgy and Metal Injection Molding (MIM)"
         description="High-precision metal components using Powder Metallurgy (PM) and MIM technologies. Cost-effective, high-volume production with superior material properties."
-        keywords={['Powder Metallurgy', 'Metal Injection Molding', 'MIM', 'Sintering', 'Precision Parts', 'Hydroforce']}
+        keywords={[
+          'Powder Metallurgy',
+          'Metal Injection Molding',
+          'MIM',
+          'Sintering',
+          'Precision Parts',
+          'Hydroforce',
+        ]}
       />
       <Hero
         title="Powder Metallurgy (PM) & Metal Injection Molding (MIM)"

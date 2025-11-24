@@ -7,10 +7,17 @@ import { SEO } from '../components/SEO';
 export const Home: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Home"
         description="Hydroforce Engineering specializes in precision manufacturing, hydraulic solutions, powder metallurgy, CNC machining, and die casting. 30+ years of excellence."
-        keywords={['Hydraulic Cylinders', 'Powder Metallurgy', 'CNC Machining', 'Die Casting', 'Hydroforce Engineering', 'Manufacturing']}
+        keywords={[
+          'Hydraulic Cylinders',
+          'Powder Metallurgy',
+          'CNC Machining',
+          'Die Casting',
+          'Hydroforce Engineering',
+          'Manufacturing',
+        ]}
       />
       <Hero
         title="Precision in Metal, Power in Hydraulics"

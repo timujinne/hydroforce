@@ -6,10 +6,15 @@ import { SEO } from '../components/SEO';
 export const PrivacyPolicy: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Privacy Policy"
         description="Hydroforce Engineering Privacy Policy. Learn how we collect, use, and protect your personal information."
-        keywords={['Privacy Policy', 'Data Protection', 'GDPR', 'Hydroforce Engineering']}
+        keywords={[
+          'Privacy Policy',
+          'Data Protection',
+          'GDPR',
+          'Hydroforce Engineering',
+        ]}
       />
       <Hero
         title="Privacy Policy"

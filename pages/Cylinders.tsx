@@ -6,10 +6,16 @@ import { SEO } from '../components/SEO';
 export const Cylinders: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Hydraulic Cylinders"
         description="Custom and standard hydraulic cylinders manufactured for demanding conditions. Telescopic, high-pressure, and precision cylinders up to 500+ bar."
-        keywords={['Hydraulic Cylinders', 'Custom Cylinders', 'Telescopic Cylinders', 'Heavy Duty Cylinders', 'Hydroforce']}
+        keywords={[
+          'Hydraulic Cylinders',
+          'Custom Cylinders',
+          'Telescopic Cylinders',
+          'Heavy Duty Cylinders',
+          'Hydroforce',
+        ]}
       />
       <Hero
         title="Hydraulic Cylinders"

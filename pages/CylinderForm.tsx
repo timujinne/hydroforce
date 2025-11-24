@@ -65,10 +65,14 @@ export const CylinderForm: React.FC = () => {
 
   return (
     <>
-      <SEO 
+      <SEO
         title="Hydraulic Cylinder Specification Form"
         description="Submit your technical requirements for custom hydraulic cylinder manufacturing. Detailed specification form for engineering quotes."
-        keywords={['Hydraulic Cylinder Quote', 'Cylinder Specification', 'Custom Hydraulics Form']}
+        keywords={[
+          'Hydraulic Cylinder Quote',
+          'Cylinder Specification',
+          'Custom Hydraulics Form',
+        ]}
       />
       {/* Custom CSS based on the provided template */}
       <style>{`

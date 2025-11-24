@@ -6,10 +6,17 @@ import { SEO } from '../components/SEO';
 export const Motors: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Hydraulic Motors and Pumps"
         description="Hydroforce offers a complete range of gear, planetary, axial-piston, and radial-piston hydraulic motors. Engineered for reliability in mobile and industrial applications."
-        keywords={['Hydraulic Motors', 'Hydraulic Pumps', 'Gear Motors', 'Piston Motors', 'Radial Piston', 'Hydroforce']}
+        keywords={[
+          'Hydraulic Motors',
+          'Hydraulic Pumps',
+          'Gear Motors',
+          'Piston Motors',
+          'Radial Piston',
+          'Hydroforce',
+        ]}
       />
       <Hero
         title="Hydraulic Motors and Pumps by Hydroforce"

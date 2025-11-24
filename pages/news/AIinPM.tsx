@@ -5,10 +5,16 @@ import { SEO } from '../../components/SEO';
 export const AIinPM: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="AI and Digital Technologies in Manufacturing"
         description="Revolutionizing Powder Metallurgy with Industry 4.0, AI, and digital twin technology for enhanced precision and process control."
-        keywords={['AI in Manufacturing', 'Industry 4.0', 'Powder Metallurgy', 'Digital Twin', 'Smart Factory']}
+        keywords={[
+          'AI in Manufacturing',
+          'Industry 4.0',
+          'Powder Metallurgy',
+          'Digital Twin',
+          'Smart Factory',
+        ]}
       />
       <Hero
         title="AI and Digital Technologies"

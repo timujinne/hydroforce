@@ -6,10 +6,16 @@ import { SEO } from '../components/SEO';
 export const DieCasting: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="High-Pressure Die Casting (HPDC)"
         description="Precision aluminum die casting services for complex components. High-pressure die casting offers dimensional accuracy, efficiency, and superior surface finish."
-        keywords={['Die Casting', 'HPDC', 'Aluminum Casting', 'High Pressure Die Casting', 'Hydroforce']}
+        keywords={[
+          'Die Casting',
+          'HPDC',
+          'Aluminum Casting',
+          'High Pressure Die Casting',
+          'Hydroforce',
+        ]}
       />
       <Hero
         title="High-Pressure Die Casting (HPDC)"

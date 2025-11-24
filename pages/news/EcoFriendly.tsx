@@ -5,10 +5,16 @@ import { SEO } from '../../components/SEO';
 export const EcoFriendly: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="Eco-Friendly Powder Metallurgy"
         description="Learn how Powder Metallurgy is a sustainable choice for modern manufacturing, offering material efficiency and reduced energy consumption."
-        keywords={['Sustainability', 'Green Manufacturing', 'Powder Metallurgy', 'Eco-friendly', 'Material Efficiency']}
+        keywords={[
+          'Sustainability',
+          'Green Manufacturing',
+          'Powder Metallurgy',
+          'Eco-friendly',
+          'Material Efficiency',
+        ]}
       />
       <Hero
         title="Eco-Friendly Powder Metallurgy"

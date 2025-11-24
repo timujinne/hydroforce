@@ -6,10 +6,17 @@ import { SEO } from '../components/SEO';
 export const Machining: React.FC = () => {
   return (
     <>
-      <SEO 
+      <SEO
         title="CNC Machining Services"
         description="Precision CNC machining, turning, and milling services for complex components. Manufacturing standard, high-precision, and large-scale parts."
-        keywords={['CNC Machining', 'Precision Machining', 'Turning', 'Milling', 'Standard Parts', 'Hydroforce']}
+        keywords={[
+          'CNC Machining',
+          'Precision Machining',
+          'Turning',
+          'Milling',
+          'Standard Parts',
+          'Hydroforce',
+        ]}
       />
       <Hero
         title="Machining"
