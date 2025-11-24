@@ -1,10 +1,16 @@
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const Quality: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="Quality Control"
+        description="Our integrated quality management system ensures precision and reliability. ISO 9001:2015 certified. Advanced measurement and testing facilities."
+        keywords={['Quality Control', 'ISO 9001', 'CMM Inspection', 'Material Analysis', 'Hydroforce Engineering']}
+      />
       {/* Hero Section - Image Updated */}
       <Hero
         title="Quality Control System"

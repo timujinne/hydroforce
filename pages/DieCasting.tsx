@@ -1,10 +1,16 @@
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const DieCasting: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="High-Pressure Die Casting (HPDC)"
+        description="Precision aluminum die casting services for complex components. High-pressure die casting offers dimensional accuracy, efficiency, and superior surface finish."
+        keywords={['Die Casting', 'HPDC', 'Aluminum Casting', 'High Pressure Die Casting', 'Hydroforce']}
+      />
       <Hero
         title="High-Pressure Die Casting (HPDC)"
         subtitle="Precision, Efficiency, and Exceptional Surface Quality"
@@ -558,5 +564,4 @@ const AppCard = ({
         </ul>
       )}
     </div>
-  </div>
-);
+  );

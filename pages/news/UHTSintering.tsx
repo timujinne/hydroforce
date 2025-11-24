@@ -1,9 +1,15 @@
 import React from 'react';
 import { Hero } from '../../components/Hero';
+import { SEO } from '../../components/SEO';
 
 export const UHTSintering: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="Ultra-High Temperature Sintering"
+        description="Transforming material properties in Powder Metallurgy with Ultra-High Temperature Sintering (UHTS). Enhanced strength and performance."
+        keywords={['Ultra-High Temperature Sintering', 'UHTS', 'Powder Metallurgy', 'Sintering', 'Advanced Alloys']}
+      />
       <Hero
         title="Ultra-High Temperature Sintering"
         subtitle="Transforming Material Properties"

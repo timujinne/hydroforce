@@ -1,9 +1,15 @@
 import React from 'react';
 import { Hero } from '../../components/Hero';
+import { SEO } from '../../components/SEO';
 
 export const NonTraditional: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="PM in Non-traditional Fields"
+        description="Exploring the applications of Powder Metallurgy beyond automotive: medical implants, aerospace components, e-mobility, and luxury goods."
+        keywords={['Powder Metallurgy Applications', 'Medical Implants', 'Aerospace PM', 'MIM', 'Soft Magnetic Composites']}
+      />
       <Hero
         title="Powder Metallurgy in Non-traditional Fields"
         subtitle="Going Beyond Automotive"
