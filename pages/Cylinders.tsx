@@ -1,11 +1,16 @@
-
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const Cylinders: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="Hydraulic Cylinders"
+        description="Custom and standard hydraulic cylinders manufactured for demanding conditions. Telescopic, high-pressure, and precision cylinders up to 500+ bar."
+        keywords={['Hydraulic Cylinders', 'Custom Cylinders', 'Telescopic Cylinders', 'Heavy Duty Cylinders', 'Hydroforce']}
+      />
       <Hero
         title="Hydraulic Cylinders"
         subtitle="Design and Production for All Tasks and Operating Conditions"

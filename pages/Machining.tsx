@@ -1,11 +1,16 @@
-
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const Machining: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="CNC Machining Services"
+        description="Precision CNC machining, turning, and milling services for complex components. Manufacturing standard, high-precision, and large-scale parts."
+        keywords={['CNC Machining', 'Precision Machining', 'Turning', 'Milling', 'Standard Parts', 'Hydroforce']}
+      />
       <Hero
         title="Machining"
         subtitle="Manufacturing of Standard, High-Precision, and Large-Scale Components"

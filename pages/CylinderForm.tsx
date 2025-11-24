@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Hero } from '../components/Hero';
+import { SEO } from '../components/SEO';
 
 export const CylinderForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
@@ -65,6 +65,11 @@ export const CylinderForm: React.FC = () => {
 
   return (
     <>
+      <SEO 
+        title="Hydraulic Cylinder Specification Form"
+        description="Submit your technical requirements for custom hydraulic cylinder manufacturing. Detailed specification form for engineering quotes."
+        keywords={['Hydraulic Cylinder Quote', 'Cylinder Specification', 'Custom Hydraulics Form']}
+      />
       {/* Custom CSS based on the provided template */}
       <style>{`
         .cylinder-form-wrapper {

@@ -1,11 +1,16 @@
-
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HashLink } from 'react-router-hash-link';
+import { SEO } from '../components/SEO';
 
 export const PrivacyPolicy: React.FC = () => {
   return (
     <>
+      <SEO 
+        title="Privacy Policy"
+        description="Hydroforce Engineering Privacy Policy. Learn how we collect, use, and protect your personal information."
+        keywords={['Privacy Policy', 'Data Protection', 'GDPR', 'Hydroforce Engineering']}
+      />
       <Hero
         title="Privacy Policy"
         subtitle="Last updated March 10, 2025"
