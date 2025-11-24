@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hydroforce Engineering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: '#01577d',
+                light: '#0a6a94',
+                dark: '#003a52',
+              },
+              accent: {
+                DEFAULT: '#bc3636',
+                dark: '#962a2a',
+              },
+              text: {
+                gray: '#4b4b4b',
+              },
+              bg: {
+                light: '#f8f9fa',
+              }
+            },
+            fontFamily: {
+              sans: ['Roboto', 'sans-serif'],
+            },
+            boxShadow: {
+              'card': '0 5px 15px rgba(0, 0, 0, 0.1)',
+              'card-hover': '0 15px 40px rgba(0, 0, 0, 0.2)',
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+      html { scroll-behavior: smooth; }
+      body { font-family: 'Roboto', sans-serif; color: #4b4b4b; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-router-hash-link": "https://aistudiocdn.com/react-router-hash-link@^2.4.3"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
