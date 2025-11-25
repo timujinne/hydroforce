@@ -9,15 +9,15 @@ interface SEOProps {
   type?: string;
 }
 
-export const SEO: React.FC<SEOProps> = ({ 
-  title, 
-  description, 
-  keywords = [], 
+export const SEO: React.FC<SEOProps> = ({
+  title,
+  description,
+  keywords = [],
   image = 'https://www.hydroforce.ee/wp-content/uploads/2025/09/HF-mainIMG.webp',
-  type = 'website'
+  type = 'website',
 }) => {
   const location = useLocation();
-  const siteName = "Hydroforce Engineering";
+  const siteName = 'Hydroforce Engineering';
   const fullTitle = `${title} | ${siteName}`;
   const currentUrl = window.location.href;
 
@@ -38,13 +38,13 @@ export const SEO: React.FC<SEOProps> = ({
 
     // 3. Helper to set OG tags (property attribute)
     const setOg = (property: string, content: string) => {
-       let element = document.querySelector(`meta[property="${property}"]`);
-       if (!element) {
-         element = document.createElement('meta');
-         element.setAttribute('property', property);
-         document.head.appendChild(element);
-       }
-       element.setAttribute('content', content);
+      let element = document.querySelector(`meta[property="${property}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute('property', property);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
     };
 
     // 4. Update Meta Tags
@@ -77,7 +77,6 @@ export const SEO: React.FC<SEOProps> = ({
       document.head.appendChild(link);
     }
     link.setAttribute('href', currentUrl);
-
   }, [fullTitle, description, keywords, image, type, location, currentUrl]);
 
   return null;
