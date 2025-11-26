@@ -14,6 +14,7 @@ import { NonTraditional } from './pages/news/NonTraditional';
 import { UHTSintering } from './pages/news/UHTSintering';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { CylinderForm } from './pages/CylinderForm';
+import { CylinderShowcase } from './pages/CylinderShowcase';
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/motors" element={<Motors />} />
           <Route path="/cylinders" element={<Cylinders />} />
+          <Route path="/cylinder-showcase" element={<CylinderShowcase />} />
           <Route path="/cylinder-form" element={<CylinderForm />} />
           <Route path="/pm" element={<PowderMetallurgy />} />
           <Route path="/die-casting" element={<DieCasting />} />
