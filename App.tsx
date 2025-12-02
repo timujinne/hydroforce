@@ -15,6 +15,7 @@ import { UHTSintering } from './pages/news/UHTSintering';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { CylinderForm } from './pages/CylinderForm';
 import { CylinderShowcase } from './pages/CylinderShowcase';
+import { CylinderConfigurator } from './pages/CylinderConfigurator';
 
 const App: React.FC = () => {
   return (
@@ -25,6 +26,7 @@ const App: React.FC = () => {
           <Route path="/motors" element={<Motors />} />
           <Route path="/cylinders" element={<Cylinders />} />
           <Route path="/cylinder-showcase" element={<CylinderShowcase />} />
+          <Route path="/cylinder-configurator" element={<CylinderConfigurator />} />
           <Route path="/cylinder-form" element={<CylinderForm />} />
           <Route path="/pm" element={<PowderMetallurgy />} />
           <Route path="/die-casting" element={<DieCasting />} />
