@@ -2,7 +2,7 @@ import React, { useState, Suspense, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, Html } from '@react-three/drei';
 import { SEO } from '../components/SEO';
-import { Check, Download, Box, Circle, Square } from 'lucide-react';
+import { Check, Download, Box, Circle, Square, Settings2 } from 'lucide-react';
 import * as THREE from 'three';
 
 // --- Types & Constants ---
@@ -10,6 +10,7 @@ import * as THREE from 'three';
 type RearMountingType = 'M0' | 'MP3' | 'MP5' | 'ME8';
 type FrontMountingType = 'M0' | 'ME7';
 type RodCoating = 'W' | 'S' | 'HC' | 'NC';
+type PortType = 'BSP' | 'METRIC' | 'NPT' | 'SAE_UNF' | 'SAE_3000' | 'SAE_6000';
 
 interface ConfigState {
   type: string;
@@ -19,24 +20,9 @@ interface ConfigState {
   bore: number;
   rod: number;
   coating: RodCoating;
+  portType: PortType;
   extension: number; // 0 to 1
 }
-
-// Standard Hydraulic Bore/Rod relationships (simplified for demo)
-const boreSizes = [25, 32, 40, 50, 63, 80, 100, 125, 160, 200];
-const getRodOptions = (bore: number) => {
-  if (bore === 25) return [12, 14, 16];
-  if (bore === 32) return [16, 18, 22];
-  if (bore === 40) return [20, 22, 28];
-  if (bore === 50) return [25, 28, 36];
-  if (bore === 63) return [32, 36, 45];
-  if (bore === 80) return [40, 45, 56];
-  if (bore === 100) return [50, 63, 70];
-  if (bore === 125) return [63, 80, 90];
-  if (bore === 160) return [80, 100, 110];
-  if (bore === 200) return [100, 125, 140];
-  return [bore / 2];
-};
 
 // --- 3D Components ---
 
@@ -104,33 +90,45 @@ const RoundFlange = ({ radius, position, rotation }: { radius: number, position:
   const holeCircleRadius = radius * 2.0; // Position holes further out
   const holeSize = 0.12; // Thinner holes
 
-  const holes = useMemo(() => {
-    const arr = [];
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.absarc(0, 0, flangeRadius, 0, Math.PI * 2, false);
+
     const count = 8; // 8 holes along perimeter
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
       const x = Math.cos(angle) * holeCircleRadius;
-      const z = Math.sin(angle) * holeCircleRadius;
-      arr.push(
-        <mesh key={i} position={[x, 0, z]} rotation={[0, 0, 0]}>
-           {/* Black cylinder representing a hole passing through */}
-           <cylinderGeometry args={[holeSize, holeSize, flangeThickness + 0.1, 16]} />
-           <meshBasicMaterial color="#000000" />
-        </mesh>
-      );
+      const y = Math.sin(angle) * holeCircleRadius;
+      
+      const hole = new THREE.Path();
+      hole.absarc(x, y, holeSize, 0, Math.PI * 2, false);
+      s.holes.push(hole);
     }
-    return arr;
-  }, [holeCircleRadius, holeSize, flangeThickness]);
+    return s;
+  }, [flangeRadius, holeCircleRadius, holeSize]);
+
+  const extrudeSettings = useMemo(() => ({
+    depth: flangeThickness,
+    bevelEnabled: false,
+    curveSegments: 32
+  }), [flangeThickness]);
 
   return (
     <group position={position} rotation={rotation ? new THREE.Euler(...rotation) : new THREE.Euler(0, 0, 0)}>
-       {/* Round Plate */}
-       <mesh castShadow receiveShadow material={Materials.steel}>
-         <cylinderGeometry args={[flangeRadius, flangeRadius, flangeThickness, 32]} />
+       {/* 
+         ExtrudeGeometry aligns with Z axis. 
+         We rotate -90deg on X to align with Y axis (matching CylinderGeometry behavior relative to parent rotation).
+         We center it on Y by offsetting -flangeThickness/2.
+       */}
+       <mesh 
+         castShadow 
+         receiveShadow 
+         material={Materials.steel} 
+         rotation={[-Math.PI/2, 0, 0]} 
+         position={[0, -flangeThickness/2, 0]}
+       >
+         <extrudeGeometry args={[shape, extrudeSettings]} />
        </mesh>
-       
-       {/* Drilled Holes */}
-       {holes}
     </group>
   );
 };
@@ -141,6 +139,33 @@ const RearLug = ({ radius, position, type }: { radius: number, position: [number
   const eyeInner = radius * 0.35; // Nominal hole diameter
   const protrusion = radius * 1.0;
 
+  const eyeShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.absarc(0, 0, eyeOuter, 0, Math.PI * 2, false);
+    
+    // Create hole
+    const hole = new THREE.Path();
+    hole.absarc(0, 0, eyeInner, 0, Math.PI * 2, false);
+    s.holes.push(hole);
+    
+    return s;
+  }, [eyeOuter, eyeInner]);
+
+  // For MP5 Bearing
+  const bearingShape = useMemo(() => {
+    if (type !== 'MP5') return null;
+    const s = new THREE.Shape();
+    s.absarc(0, 0, eyeInner, 0, Math.PI * 2, false);
+    // Pin Hole in bearing
+    const hole = new THREE.Path();
+    hole.absarc(0, 0, eyeInner * 0.6, 0, Math.PI * 2, false);
+    s.holes.push(hole);
+    return s;
+  }, [type, eyeInner]);
+
+  const extrudeSettings = useMemo(() => ({ depth: width, bevelEnabled: false, curveSegments: 32 }), [width]);
+  const bearingExtrudeSettings = useMemo(() => ({ depth: width * 1.2, bevelEnabled: false, curveSegments: 32 }), [width]);
+
   return (
     <group position={position}>
        {/* Neck connecting cap to eye */}
@@ -148,41 +173,95 @@ const RearLug = ({ radius, position, type }: { radius: number, position: [number
           <boxGeometry args={[protrusion, eyeOuter * 2, width]} />
        </mesh>
        
-       {/* The Eye */}
+       {/* The Eye (Extruded Ring) */}
        <group position={[-protrusion, 0, 0]}>
-          <mesh rotation={[Math.PI/2, 0, 0]} castShadow receiveShadow material={Materials.steel}>
-             <cylinderGeometry args={[eyeOuter, eyeOuter, width, 32]} />
+          <mesh position={[0, 0, -width/2]} castShadow receiveShadow material={Materials.steel}>
+             <extrudeGeometry args={[eyeShape, extrudeSettings]} />
           </mesh>
           
-          {type === 'MP5' ? (
-             // MP5: Spherical Bearing (Ring Insert)
-             <group rotation={[Math.PI/2, 0, 0]}>
-                {/* Inner Ring (The Bearing Race/Ball) - Protrudes slightly and has a different material */}
-                <mesh>
-                   <cylinderGeometry args={[eyeInner, eyeInner, width * 1.2, 32]} />
-                   <meshStandardMaterial color="#b0c4de" roughness={0.3} metalness={0.8} />
-                </mesh>
-                
-                {/* The Pin Hole inside the bearing */}
-                <mesh renderOrder={1}>
-                   <cylinderGeometry args={[eyeInner * 0.6, eyeInner * 0.6, width * 1.25, 32]} />
-                   <meshBasicMaterial color="#1a1a1a" />
-                </mesh>
-                
-                {/* Visual Ring detail for bearing edge */}
-                <mesh>
-                  <torusGeometry args={[eyeInner, 0.02, 16, 32]} />
-                  <meshStandardMaterial color="#666" />
-                </mesh>
-             </group>
-          ) : (
-             // MP3: Simple Hole
-             <mesh rotation={[Math.PI/2, 0, 0]}>
-                <cylinderGeometry args={[eyeInner, eyeInner, width + 0.05, 32]} />
-                <meshBasicMaterial color="#1a1a1a" />
+          {type === 'MP5' && bearingShape && (
+             // MP5: Spherical Bearing (Extruded Ring Insert)
+             <mesh position={[0, 0, -(width * 1.2)/2]}>
+                <extrudeGeometry args={[bearingShape, bearingExtrudeSettings]} />
+                <meshStandardMaterial color="#b0c4de" roughness={0.3} metalness={0.8} />
              </mesh>
           )}
        </group>
+    </group>
+  );
+};
+
+const PortAssembly = ({ radius, height, position, type }: { radius: number, height: number, position: [number, number, number], type: PortType }) => {
+  const isFlange = type === 'SAE_3000' || type === 'SAE_6000';
+  
+  const flangeShape = useMemo(() => {
+    if (!isFlange) return null;
+    const s = new THREE.Shape();
+    const w = radius * 2.5;
+    const h = radius * 2.5; // It's square
+    // Draw centered rectangle
+    s.moveTo(-w/2, -h/2);
+    s.lineTo(w/2, -h/2);
+    s.lineTo(w/2, h/2);
+    s.lineTo(-w/2, h/2);
+    s.lineTo(-w/2, -h/2);
+
+    // Center Port Hole
+    const centerHole = new THREE.Path();
+    centerHole.absarc(0, 0, radius * 0.6, 0, Math.PI * 2, false);
+    s.holes.push(centerHole);
+
+    // 4 Bolt Holes
+    const boltOffset = radius * 0.85;
+    const boltSize = radius * 0.15;
+    [ [1, 1], [1, -1], [-1, 1], [-1, -1] ].forEach(([mx, mz]) => {
+         const bh = new THREE.Path();
+         bh.absarc(mx * boltOffset, mz * boltOffset, boltSize, 0, Math.PI * 2, false);
+         s.holes.push(bh);
+    });
+    
+    return s;
+  }, [isFlange, radius]);
+
+  const extrudeSettings = useMemo(() => ({ depth: height * 0.5, bevelEnabled: false, curveSegments: 32 }), [height]);
+
+  return (
+    <group position={position}>
+      {isFlange && flangeShape ? (
+         // SAE Flange Port Visualization with Real Holes
+         <group>
+            {/* 
+               Extrude starts at 0 (on Y plane of group after rotation). 
+               We position group on surface, so we extrude up.
+               Rotate X -90 aligns Z-extrusion to Y-axis.
+            */}
+            <mesh 
+              position={[0, 0, 0]} 
+              rotation={[-Math.PI/2, 0, 0]} 
+              castShadow 
+              receiveShadow 
+              material={Materials.steel}
+            >
+               <extrudeGeometry args={[flangeShape, extrudeSettings]} />
+            </mesh>
+         </group>
+      ) : (
+         // Threaded Port Visualization (Boss + Plug)
+         <group>
+            {/* Boss */}
+            <mesh position={[0, 0, 0]} castShadow receiveShadow material={Materials.steel}>
+               <cylinderGeometry args={[radius, radius, height, 24]} />
+            </mesh>
+            {/* Plug / Cap */}
+            <mesh position={[0, height * 0.75, 0]} castShadow receiveShadow material={Materials.steel}>
+               <cylinderGeometry args={[radius * 0.8, radius * 0.8, height * 0.5, 6]} />
+            </mesh>
+             {/* Center Indent */}
+            <mesh position={[0, height * 1.01, 0]} material={Materials.steel}>
+               <cylinderGeometry args={[radius * 0.4, radius * 0.4, 0.1, 24]} />
+            </mesh>
+         </group>
+      )}
     </group>
   );
 };
@@ -195,11 +274,13 @@ const ProceduralCylinder = ({ config }: { config: ConfigState }) => {
   const strokeLen = config.stroke * scale;
   
   // Dimensions for "Just a tube" look
-  // The Head and Cap are now internal/flush plugs, so the barrel covers everything visually.
-  // We use fixed offsets for internal mechanics logic, but visually it's linear.
   const endBlockLen = boreRad * 1.5; // Reserved length for internal mechanics
   const barrelLen = strokeLen + (endBlockLen * 2); 
   
+  // Rod Length Calculation
+  // Reduced multiplier from 4 to 2.8 to prevent rear protrusion while maintaining gland engagement
+  const rodTotalLength = strokeLen + (boreRad * 2.8);
+
   const currentExtension = config.extension * strokeLen;
 
   const tubeRadius = boreRad * 1.2;
@@ -212,16 +293,16 @@ const ProceduralCylinder = ({ config }: { config: ConfigState }) => {
   // Flange thickness used for positioning
   const flangeThickness = 0.5;
 
-  // Port dimensions (Scaled to ensure visibility on large sizes)
-  const portRadius = boreRad * 0.45;
-  const portHeight = Math.max(0.4, boreRad * 1.0);
+  // Port dimensions
+  // FIXED: Ports now use a constant visual size and do not scale with cylinder diameter
+  const portRadius = 0.35; // Fixed radius (~35mm diameter equivalent visually)
+  const portHeight = 0.5;  // Fixed height
   const portY = tubeRadius; 
 
   return (
     <group rotation={[0, -Math.PI / 6, 0]}>
       
       {/* --- BARREL ASSEMBLY (Fixed) --- */}
-      {/* Center the whole barrel on local 0 for easier rotation pivot */}
       <group position={[-barrelLen / 2, 0, 0]}>
         
         {/* Main Painted Tube Body */}
@@ -238,14 +319,16 @@ const ProceduralCylinder = ({ config }: { config: ConfigState }) => {
             
             {/* Front Mountings */}
             {config.mountingFront === 'ME7' && (
-                // ME7: Round Flange bolted to the front face
                 <RoundFlange radius={boreRad} position={[flangeThickness/2, 0, 0]} rotation={[0, 0, Math.PI/2]} />
             )}
             
-            {/* Front Port (On the tube surface) - Scaled */}
-            <mesh position={[-endBlockLen, portY, 0]} material={Materials.steel}>
-                <cylinderGeometry args={[portRadius, portRadius, portHeight, 24]} />
-            </mesh>
+            {/* Front Port - Positioned on Top */}
+            <PortAssembly 
+               radius={portRadius} 
+               height={portHeight} 
+               position={[-endBlockLen, portY, 0]} 
+               type={config.portType}
+            />
         </group>
         
         {/* --- REAR END (Cap) --- */}
@@ -257,14 +340,12 @@ const ProceduralCylinder = ({ config }: { config: ConfigState }) => {
             
             {/* Rear Mountings */}
             {config.mountingRear === 'ME8' && (
-                // ME8: Round Flange welded/bolted to the rear face
                 <RoundFlange radius={boreRad} position={[-flangeThickness/2, 0, 0]} rotation={[0, 0, Math.PI/2]} />
             )}
             {(config.mountingRear === 'MP3' || config.mountingRear === 'MP5') && (
                 <RearLug radius={boreRad} position={[0, 0, 0]} type={config.mountingRear} />
             )}
             {config.mountingRear === 'M0' && (
-                // M0 logic: Threaded stud on the rear face
                 <ThreadedStud 
                    radius={threadRadius} 
                    length={threadLength} 
@@ -273,26 +354,26 @@ const ProceduralCylinder = ({ config }: { config: ConfigState }) => {
                 />
             )}
 
-            {/* Rear Port (On the tube surface) - Scaled */}
-            <mesh position={[endBlockLen, portY, 0]} material={Materials.steel}>
-                <cylinderGeometry args={[portRadius, portRadius, portHeight, 24]} />
-            </mesh>
+            {/* Rear Port - Positioned on Top */}
+            <PortAssembly 
+               radius={portRadius} 
+               height={portHeight} 
+               position={[endBlockLen, portY, 0]} 
+               type={config.portType}
+            />
         </group>
 
       </group>
 
       {/* --- ROD ASSEMBLY (Moving) --- */}
-      {/* Positioned relative to the front face (barrelLen) */}
       <group position={[(-barrelLen / 2) + barrelLen + currentExtension, 0, 0]}>
          
          {/* Rod Shaft */}
-         {/* Extends backwards into the barrel */}
-         <mesh rotation={[0, 0, -Math.PI / 2]} position={[- (strokeLen + (boreRad*4)) / 2, 0, 0]} castShadow material={getRodMaterial(config.coating)}>
-             <cylinderGeometry args={[rodRad, rodRad, strokeLen + (boreRad*4), 32]} />
+         <mesh rotation={[0, 0, -Math.PI / 2]} position={[- rodTotalLength / 2 + threadLength/2, 0, 0]} castShadow material={getRodMaterial(config.coating)}>
+             <cylinderGeometry args={[rodRad, rodRad, rodTotalLength, 32]} />
          </mesh>
 
          {/* Rod End - Threaded Stud */}
-         {/* Starts exactly at the rod face */}
          <ThreadedStud 
             radius={threadRadius} 
             length={threadLength} 
@@ -327,6 +408,60 @@ const MountingOption = ({ id, label, selected, onSelect, icon }: { id: string, l
   </div>
 );
 
+const PortOption = ({ id, label, selected, onSelect, type }: { id: string, label: string, selected: boolean, onSelect: () => void, type: 'thread' | 'flange' }) => (
+  <div 
+    onClick={onSelect}
+    className={`
+      cursor-pointer rounded-lg p-3 border-2 transition-all duration-200 flex flex-col items-center justify-center text-center gap-1 min-h-[80px]
+      ${selected 
+        ? 'border-primary bg-primary/5 shadow-sm' 
+        : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+      }
+    `}
+  >
+    <div className={`${selected ? 'text-primary' : 'text-gray-400'} mb-1`}>
+        {type === 'thread' ? <Circle size={18} /> : <Square size={18} />}
+    </div>
+    <span className={`text-xs font-bold leading-tight ${selected ? 'text-primary' : 'text-gray-700'}`}>{id}</span>
+    <span className="text-[9px] text-gray-400">{label}</span>
+  </div>
+);
+
+const SliderControl = ({ label, value, onChange, min, max, suffix = "mm" }: { label: string, value: number, onChange: (val: number) => void, min: number, max: number, suffix?: string }) => (
+  <div className="mb-6">
+     <div className="flex justify-between items-center mb-2">
+        <label className="text-sm font-bold text-gray-700">{label}</label>
+        <div className="flex items-center gap-2">
+            <input 
+               type="number" 
+               value={value}
+               onChange={(e) => {
+                   const val = parseInt(e.target.value);
+                   if (!isNaN(val)) onChange(Math.max(min, Math.min(max, val)));
+               }}
+               className="w-20 text-right p-1.5 border border-gray-300 rounded-md text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all"
+               min={min} max={max}
+            />
+            <span className="text-xs font-bold text-gray-400 w-6">{suffix}</span>
+        </div>
+     </div>
+     <div className="relative h-6 flex items-center">
+        <input 
+            type="range" 
+            min={min} 
+            max={max} 
+            value={value}
+            onChange={(e) => onChange(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-light z-10 relative"
+        />
+     </div>
+     <div className="flex justify-between text-[10px] uppercase font-bold text-gray-400 mt-1 tracking-wider">
+        <span>{min} {suffix}</span>
+        <span>{max} {suffix}</span>
+     </div>
+  </div>
+);
+
 export const CylinderConfigurator: React.FC = () => {
   const [config, setConfig] = useState<ConfigState>({
     type: 'DS – double acting cylinder with single rod',
@@ -336,14 +471,14 @@ export const CylinderConfigurator: React.FC = () => {
     bore: 63,
     rod: 36,
     coating: 'W',
+    portType: 'BSP',
     extension: 0.3
   });
 
-  // Update rod if bore changes and current rod is invalid
+  // Ensure rod is always smaller than bore
   useEffect(() => {
-    const validRods = getRodOptions(config.bore);
-    if (!validRods.includes(config.rod)) {
-        setConfig(prev => ({ ...prev, rod: validRods[0] }));
+    if (config.rod >= config.bore) {
+        setConfig(prev => ({ ...prev, rod: Math.floor(prev.bore * 0.6) })); 
     }
   }, [config.bore]);
 
@@ -472,52 +607,42 @@ export const CylinderConfigurator: React.FC = () => {
               </div>
 
               {/* Stroke Slider */}
-              <div className="mb-8">
-                 <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-bold text-gray-700">Stroke (mm)</label>
-                    <input 
-                       type="number" 
-                       value={config.stroke}
-                       onChange={(e) => handleChange('stroke', parseInt(e.target.value))}
-                       className="w-24 text-right p-1 border border-gray-300 rounded text-sm font-mono"
-                       min={30} max={4000}
-                    />
-                 </div>
-                 <input 
-                    type="range" 
-                    min={30} 
-                    max={2000} 
-                    value={config.stroke}
-                    onChange={(e) => handleChange('stroke', parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
-                 />
-                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>30mm</span>
-                    <span>2000mm+</span>
-                 </div>
-              </div>
+              <SliderControl 
+                  label="Stroke" 
+                  value={config.stroke} 
+                  onChange={(v) => handleChange('stroke', v)} 
+                  min={30} 
+                  max={2000} 
+              />
 
               {/* Bore & Rod Grid */}
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                 <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Bore (mm) <span className="text-red-500">*</span></label>
-                    <select 
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                        value={config.bore}
-                        onChange={(e) => handleChange('bore', parseInt(e.target.value))}
-                    >
-                        {boreSizes.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                 </div>
-                 <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Piston Rod (mm) <span className="text-red-500">*</span></label>
-                    <select 
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                        value={config.rod}
-                        onChange={(e) => handleChange('rod', parseInt(e.target.value))}
-                    >
-                        {getRodOptions(config.bore).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+              <div className="grid grid-cols-2 gap-6 mb-2">
+                 <SliderControl 
+                    label="Bore Ø" 
+                    value={config.bore} 
+                    onChange={(v) => handleChange('bore', v)} 
+                    min={20} 
+                    max={250} 
+                 />
+                 <SliderControl 
+                    label="Rod Ø" 
+                    value={config.rod} 
+                    onChange={(v) => handleChange('rod', v)} 
+                    min={10} 
+                    max={config.bore - 5} 
+                 />
+              </div>
+
+              {/* Hydraulic Ports */}
+              <div className="mb-8">
+                 <label className="block text-sm font-bold text-gray-700 mb-3">Hydraulic Ports</label>
+                 <div className="grid grid-cols-3 gap-2">
+                    <PortOption id="BSP" label="G Thread" selected={config.portType === 'BSP'} onSelect={() => handleChange('portType', 'BSP')} type="thread" />
+                    <PortOption id="Metric" label="M Thread" selected={config.portType === 'METRIC'} onSelect={() => handleChange('portType', 'METRIC')} type="thread" />
+                    <PortOption id="NPT" label="NPT Thread" selected={config.portType === 'NPT'} onSelect={() => handleChange('portType', 'NPT')} type="thread" />
+                    <PortOption id="SAE" label="UNF Thread" selected={config.portType === 'SAE_UNF'} onSelect={() => handleChange('portType', 'SAE_UNF')} type="thread" />
+                    <PortOption id="SAE 3000" label="Code 61 Flange" selected={config.portType === 'SAE_3000'} onSelect={() => handleChange('portType', 'SAE_3000')} type="flange" />
+                    <PortOption id="SAE 6000" label="Code 62 Flange" selected={config.portType === 'SAE_6000'} onSelect={() => handleChange('portType', 'SAE_6000')} type="flange" />
                  </div>
               </div>
 

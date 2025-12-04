@@ -27,6 +27,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       name: 'Hydraulics', 
       path: '#', 
       dropdown: [
+        { name: '2D Engineering Draft', path: '/cylinder-designer-2d' },
         { name: '3D Configurator', path: '/cylinder-configurator' },
         { name: 'Hydraulic Cylinders', path: '/cylinders' },
         { name: 'Interactive Showcase', path: '/cylinder-showcase' },
