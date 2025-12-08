@@ -1,22 +1,33 @@
 import React from 'react';
 
 declare module 'react-router-hash-link' {
+
+  import * as React from 'react';
+
   import { LinkProps } from 'react-router-dom';
 
+ 
+
   export interface HashLinkProps extends LinkProps {
+
     smooth?: boolean;
+
     scroll?: (el: HTMLElement) => void;
+
     to: string;
+
     children?: React.ReactNode;
+
     className?: string;
+
   }
 
+ 
+
   export const HashLink: React.ForwardRefExoticComponent<
+
     HashLinkProps & React.RefAttributes<HTMLAnchorElement>
-  >;
-  
-  export const NavHashLink: React.ForwardRefExoticComponent<
-    HashLinkProps & React.RefAttributes<HTMLAnchorElement>
+
   >;
 }
 
