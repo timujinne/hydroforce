@@ -655,7 +655,7 @@ export const CylinderDesigner2D: React.FC = () => {
                             className="text-2xl font-bold fill-primary font-sans" 
                             style={{fontSize: '32px', fontWeight: 'bold'}}
                         >
-                           HYDROFORCE ENGINEERING
+                           Hydraulic Cylinder
                         </text>
 
                         {/* --- THE DRAWING --- */}
