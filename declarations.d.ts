@@ -1,7 +1,9 @@
-import React from 'react';
-import { LinkProps } from 'react-router-dom';
+export {};
 
 declare module 'react-router-hash-link' {
+  import { LinkProps } from 'react-router-dom';
+  import * as React from 'react';
+
   export interface HashLinkProps extends LinkProps {
     smooth?: boolean;
     scroll?: (el: HTMLElement) => void;

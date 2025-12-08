@@ -168,7 +168,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                  <HashLink 
                    smooth 
                    to="/#contacts" 
-                   scroll={el => scrollWithOffset(el)}
+                   scroll={(el: HTMLElement) => scrollWithOffset(el)}
                    className="bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white px-8 py-3 rounded-full font-bold text-base shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
                  >
                    Contact Us <ArrowRight size={18} />
@@ -237,7 +237,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                  to="/#contacts"
                  className="block text-lg font-bold px-4 py-4 rounded-lg text-white bg-accent hover:bg-accent-dark mt-4 text-center shadow-md"
                  onClick={() => setIsMobileMenuOpen(false)}
-                 scroll={el => scrollWithOffset(el)}
+                 scroll={(el: HTMLElement) => scrollWithOffset(el)}
               >
                 Contact Us
               </HashLink>
