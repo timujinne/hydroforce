@@ -124,9 +124,6 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
     const neckHeight = radius * 1.6; // Width of the rectangular neck
     const faceX = dir * length;
     
-    // Dimension positioning
-    const dimY = -outerR - 10;
-    
     return (
       <g transform={`translate(${x}, ${y})`}>
          {/* Main Outline: Circle merged with Rectangle */}
@@ -223,13 +220,35 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
   }
 
   if (type === 'Trunnion') {
-    const tLen = 20;
-    const tH = radius * 3.0; // Pins sticking out
+    // Trunnion Block: Centered on 'x' so that 'L' (pin-to-pin) is measured from center.
+    // Block connects to barrel via offset.
+    const tLen = 40; // Block width (fixed to be robust)
+    const tH = radius * 2.8; // Total height including pins
+    const pinW = 16; // Pin diameter/width
+    const blockH = radius * 2; // Main block height matches barrel somewhat or slightly larger? Use diameter.
+    
+    // We center the block on x. x is 0 in local coords.
+    // Rect goes from -tLen/2 to +tLen/2.
+    // Offset passed in 'length' is 20 (half width), so barrel starts at x + 20.
+    // Block right edge is at +20. Perfect match.
+    
     return (
       <g transform={`translate(${x}, ${y})`}>
-         <rect x={isFront ? 0 : -tLen} y={-radius} width={tLen} height={radius*2} fill="white" stroke="black" strokeWidth="1.5" />
-         {/* Pins */}
-         <rect x={isFront ? 5 : -tLen + 5} y={-tH/2} width={10} height={tH} fill="white" stroke="black" strokeWidth="1" />
+         {/* Main Block */}
+         <rect x={-tLen/2} y={-blockH/2} width={tLen} height={blockH} fill="white" stroke="black" strokeWidth="1.5" />
+         
+         {/* Pins sticking out top/bottom */}
+         {/* Top Pin */}
+         <rect x={-pinW/2} y={-tH/2} width={pinW} height={(tH - blockH)/2 + 2} fill="white" stroke="black" strokeWidth="1" />
+         {/* Bottom Pin */}
+         <rect x={-pinW/2} y={blockH/2 - 2} width={pinW} height={(tH - blockH)/2 + 2} fill="white" stroke="black" strokeWidth="1" />
+         
+         {/* Redraw Block border to cover pin overlap cleanly */}
+         <rect x={-tLen/2} y={-blockH/2} width={tLen} height={blockH} fill="none" stroke="black" strokeWidth="1.5" />
+         
+         {/* Center Axis Marker */}
+         <line x1={0} y1={-tH/2 - 5} x2={0} y2={tH/2 + 5} stroke="black" strokeWidth="0.5" strokeDasharray="5,2" />
+         <line x1={-tLen/2 - 5} y1={0} x2={tLen/2 + 5} y2={0} stroke="black" strokeWidth="0.5" strokeDasharray="5,2" />
       </g>
     );
   }
@@ -334,6 +353,7 @@ export const CylinderDesigner2D: React.FC = () => {
   const getMountOffset = (type: MountType, radius: number) => {
      if (type === 'Flange') return 15;
      if (type === 'Thread') return 30;
+     if (type === 'Trunnion') return 20; // Half width of Trunnion block
      return radius * 1.5; 
   };
 
@@ -341,30 +361,34 @@ export const CylinderDesigner2D: React.FC = () => {
   const frontOffset = getMountOffset(specs.frontMount, frontMountRadius);
   
   // Length Calculation Logic
-  // Default (calculated) Closed Length = rearOffset + barrelLength + frontOffset
-  // If user provides customClosedLength (L), we need to derive barrelLength from it.
-  
+  const MIN_PISTON_LENGTH = 60; 
   let barrelLength = 0;
   let retractedLength = 0;
-  const MIN_PISTON_LENGTH = 60; // Internal mechanical requirement
 
-  if (specs.customClosedLength) {
+  // Calculate default length first to use as placeholder or fallback
+  const defaultBarrelLength = specs.stroke + MIN_PISTON_LENGTH;
+  const defaultRetractedLength = rearOffset + defaultBarrelLength + frontOffset;
+
+  if (specs.customClosedLength !== null && specs.customClosedLength > 0) {
+      // User specified length
       retractedLength = specs.customClosedLength;
-      // Reverse calculate barrel length
-      // L = rearOffset + barrel + frontOffset => barrel = L - rear - front
+      // Derive barrel length: L = Rear + Barrel + Front  =>  Barrel = L - Rear - Front
       barrelLength = retractedLength - rearOffset - frontOffset;
       
-      // Validation: Barrel must be at least Stroke + Piston
-      const minBarrel = specs.stroke + MIN_PISTON_LENGTH;
-      if (barrelLength < minBarrel) {
-          // If custom length is physically impossible, force minimum valid length
-          barrelLength = minBarrel;
+      // Constraint: Barrel must accommodate stroke + piston
+      const minBarrelRequired = specs.stroke + MIN_PISTON_LENGTH;
+      
+      if (barrelLength < minBarrelRequired) {
+          // If the requested length is physically impossible (too short), 
+          // we must increase the barrel length to the minimum required.
+          // This overrides the user's custom length in the visualization to maintain validity.
+          barrelLength = minBarrelRequired;
           retractedLength = rearOffset + barrelLength + frontOffset;
       }
   } else {
-      // Default calculation
-      barrelLength = specs.stroke + MIN_PISTON_LENGTH; 
-      retractedLength = rearOffset + barrelLength + frontOffset;
+      // Auto-calculate
+      barrelLength = defaultBarrelLength;
+      retractedLength = defaultRetractedLength;
   }
 
   const currentLength = specs.viewMode === 'Retracted' ? retractedLength : retractedLength + specs.stroke;
@@ -522,10 +546,10 @@ export const CylinderDesigner2D: React.FC = () => {
                             <input 
                                 type="number" 
                                 value={specs.customClosedLength ?? ''}
-                                placeholder={retractedLength.toFixed(1)}
+                                placeholder={defaultRetractedLength.toFixed(1)}
                                 onChange={(e) => {
                                     const val = parseFloat(e.target.value);
-                                    setSpecs({...specs, customClosedLength: isNaN(val) ? null : val});
+                                    setSpecs({...specs, customClosedLength: (isNaN(val) || val <= 0) ? null : val});
                                 }}
                                 className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary outline-none"
                             />
@@ -647,16 +671,18 @@ export const CylinderDesigner2D: React.FC = () => {
                             </pattern>
                         </defs>
 
-                        {/* Title Block (Simple) - Positioned relative to drawing, usually centered above */}
-                        <text 
-                            x={startX + currentLength/2} 
-                            y={centerY - barrelOuterDia - 100} 
-                            textAnchor="middle"
-                            className="text-2xl font-bold fill-primary font-sans" 
-                            style={{fontSize: '32px', fontWeight: 'bold'}}
-                        >
-                           Hydraulic Cylinder
-                        </text>
+                        {/* Title Box (Custom SVG Group) - Positioned centered above drawing */}
+                        <g transform={`translate(${startX + currentLength/2}, ${centerY - barrelOuterDia - 100})`}>
+                            {/* Main Title */}
+                            <text 
+                                x="0" y="0" 
+                                textAnchor="middle" 
+                                className="font-bold fill-[#003a52]" 
+                                style={{fontSize: '32px', fontFamily: 'Arial, sans-serif', fontWeight: 'bold', letterSpacing: '1px'}}
+                            >
+                                Hydraulic Cylinder
+                            </text>
+                        </g>
 
                         {/* --- THE DRAWING --- */}
                         <g>
