@@ -12,20 +12,6 @@ import { HashLink } from 'react-router-hash-link';
 import { Settings, Activity, Layers, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import * as THREE from 'three';
 
-// Extend JSX.IntrinsicElements to fix TypeScript errors with React Three Fiber elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      group: any;
-      mesh: any;
-      cylinderGeometry: any;
-      torusGeometry: any;
-      boxGeometry: any;
-      [elemName: string]: any;
-    }
-  }
-}
-
 // --- 3D Components ---
 
 const BoltCircle = ({ count, radius, position, rotation, size = 0.08 }: { count: number, radius: number, position: [number, number, number], rotation: [number, number, number], size?: number }) => {

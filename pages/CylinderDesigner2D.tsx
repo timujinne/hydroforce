@@ -15,6 +15,8 @@ interface CylinderSpecs {
   frontMount: MountType;
   portPos: 'Top' | 'Side';
   viewMode: ViewMode;
+  portLabel: string;
+  customClosedLength: number | null;
 }
 
 // ----------------------------------------------------------------------------
@@ -89,7 +91,7 @@ const DimensionLine = ({
         y={textY} 
         textAnchor="middle" 
         dominantBaseline="middle" 
-        transform={rotation ? `rotate(${rotation}, ${textX}, ${textY})` : ''}
+        transform={rotation ? `rotate(${rotation}, ${textX}, ${textY})` : undefined}
         className="text-[10px] font-mono fill-black"
         style={{ fontSize: '10px' }}
       >
@@ -122,6 +124,9 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
     const neckHeight = radius * 1.6; // Width of the rectangular neck
     const faceX = dir * length;
     
+    // Dimension positioning
+    const dimY = -outerR - 10;
+    
     return (
       <g transform={`translate(${x}, ${y})`}>
          {/* Main Outline: Circle merged with Rectangle */}
@@ -151,13 +156,34 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
          
          {/* Dimensions for Eye (Standard Engineering style) */}
          <g opacity="0.8">
-            {/* Radius Dimension */}
-            <line x1={0} y1={0} x2={-outerR * 0.707} y2={-outerR * 0.707} stroke="black" strokeWidth="0.5" markerEnd="url(#arrow)" />
-            <text x={-outerR * 0.5 - 10} y={-outerR * 0.5} className="text-[8px] font-mono">R{Math.round(outerR)}</text>
+            {/* Radius Dimension (R) */}
+            {/* If Front: Dimension points to right side of arc. If Rear: points to left side of arc. */}
+            {isFront ? (
+                <g>
+                    <line x1={0} y1={0} x2={outerR * 0.707} y2={-outerR * 0.707} stroke="black" strokeWidth="0.5" markerEnd="url(#arrow)" />
+                    <text x={outerR + 2} y={-outerR} className="text-[8px] font-mono">R{Math.round(outerR)}</text>
+                </g>
+            ) : (
+                <g>
+                    <line x1={0} y1={0} x2={-outerR * 0.707} y2={-outerR * 0.707} stroke="black" strokeWidth="0.5" markerEnd="url(#arrow)" />
+                    <text x={-outerR - 18} y={-outerR} className="text-[8px] font-mono">R{Math.round(outerR)}</text>
+                </g>
+            )}
             
-            {/* Hole Dimension with Leader */}
-            <path d={`M ${innerR * 0.707} ${innerR * 0.707} L ${outerR + 10} ${outerR + 10} H ${outerR + 25}`} fill="none" stroke="black" strokeWidth="0.5" />
-            <text x={outerR + 27} y={outerR + 12} className="text-[8px] font-mono" dominantBaseline="middle">Ø{Math.round(innerR * 2)}</text>
+            {/* Hole Dimension (Ø) */}
+            {isFront ? (
+                <g>
+                    {/* Front Mount: Leader goes right */}
+                    <path d={`M ${innerR * 0.707} ${innerR * 0.707} L ${outerR + 10} ${outerR + 10} H ${outerR + 25}`} fill="none" stroke="black" strokeWidth="0.5" />
+                    <text x={outerR + 27} y={outerR + 12} className="text-[8px] font-mono" dominantBaseline="middle">Ø{Math.round(innerR * 2)}</text>
+                </g>
+            ) : (
+                <g>
+                    {/* Rear Mount: Leader goes left */}
+                    <path d={`M ${-innerR * 0.707} ${-innerR * 0.707} L ${-outerR - 10} ${-outerR - 10} H ${-outerR - 25}`} fill="none" stroke="black" strokeWidth="0.5" />
+                    <text x={-outerR - 45} y={-outerR - 8} className="text-[8px] font-mono" dominantBaseline="middle">Ø{Math.round(innerR * 2)}</text>
+                </g>
+            )}
          </g>
       </g>
     );
@@ -166,53 +192,18 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
   if (type === 'Flange') {
     const flangeH = radius * 2.5;
     const flangeW = 15;
-    // Correction: Ensure flange is drawn "inwards" towards the cylinder body or outwards depending on standard.
-    // Usually flanges are welded ONTO the tube end.
     
-    // Front Flange (Rod end of barrel): x is barrel end. Flange extends outwards or sits on face.
-    // Rear Flange (Cap end): x is barrel start. Flange sits on back.
+    // Rear Flange: Attaches to the right of x (cylinder body starts at x)
+    // Front Flange: Attaches to the left of x (cylinder body ends at x)
     
-    // To make it look attached "to the body", we adjust coordinates.
-    // For Rear (isFront=false), we want it attached to the barrel start (x), so we position it at x-flangeW to x
-    // For Front (isFront=true), we want it attached to barrel end, so we position it at x to x+flangeW (or centered)
-    
-    // Adjusted logic:
-    // If Rear: x is barrel start. We draw rect from x-flangeW to x.
-    // If Front: x is barrel end. We draw rect from x to x+flangeW.
-    
-    // Note: The parent component passes `x` as `startX` for Rear and `rodEndAnchor` for Front.
-    // Wait, for Flange, length is small (15).
-    // The previous implementation used `getMountOffset` which returned 15 for Flange.
-    // So for Rear: x is startX. Barrel starts at startX + 15. So we need flange from startX to startX+15?
-    // Let's check `CylinderDesigner2D` usage:
-    // Rear Mount x = startX. Barrel starts at startX + rearOffset.
-    // If rearOffset = 15. Barrel starts at startX + 15.
-    // So Rear Flange should fill from startX to startX + 15.
-    // The previous `MountDraw` logic: `rect x={startX} ...`. `startX` was `isFront ? 0 : -flangeW`.
-    // If isFront=false (Rear), x=-15. Width=15. So it draws from -15 to 0.
-    // Translate is `startX`. So it draws from `startX-15` to `startX`.
-    // But Barrel starts at `startX + 15`. There is a gap of 15 units (from startX to startX+15).
-    // To fix gap: Rear Flange should draw from 0 to 15 (relative to x=startX).
-    
-    const startX = isFront ? 0 : 0; // Attached to the mount point extending inwards/outwards
-    // If Rear: x is startX. Barrel starts at startX + 15. We need flange from startX to startX+15.
-    // So rect x=0, width=15.
-    // If Front: x is rodEndAnchor. Wait, Front Flange usually on barrel?
-    // The code handles Front Mount at `rodEndAnchor`. That's the Rod End.
-    // A "Front Flange" mounting usually implies a flange on the head of the cylinder barrel, not the rod.
-    // But `specs.frontMount` controls Rod Mount in the UI label: "Front Mount (Rod)".
-    // A flange on the rod end (ISO MF1/MF2 style on rod) is possible but less common than Eye/Clevis.
-    // If it is a Rod Flange, it is attached to the rod thread.
-    // If it is a Head Flange (mounting style for cylinder), it should be on the barrel.
-    // The UI says "Front Mount (Rod)". So this is the attachment on the piston rod.
-    // So we treat it as an attachment to the rod end.
-    
+    const rectX = isFront ? -flangeW : 0;
+
     return (
       <g transform={`translate(${x}, ${y})`}>
-        <rect x={isFront ? 0 : 0} y={-flangeH/2} width={flangeW} height={flangeH} fill="white" stroke="black" strokeWidth="1.5" />
+        <rect x={rectX} y={-flangeH/2} width={flangeW} height={flangeH} fill="white" stroke="black" strokeWidth="1.5" />
         {/* Bolt Holes */}
-        <circle cx={(isFront ? 0 : 0) + flangeW/2} cy={-flangeH/2 + 10} r={3} fill="white" stroke="black" strokeWidth="0.5" />
-        <circle cx={(isFront ? 0 : 0) + flangeW/2} cy={flangeH/2 - 10} r={3} fill="white" stroke="black" strokeWidth="0.5" />
+        <circle cx={rectX + flangeW/2} cy={-flangeH/2 + 10} r={3} fill="white" stroke="black" strokeWidth="0.5" />
+        <circle cx={rectX + flangeW/2} cy={flangeH/2 - 10} r={3} fill="white" stroke="black" strokeWidth="0.5" />
       </g>
     );
   }
@@ -246,10 +237,24 @@ const MountDraw = ({ type, x, y, radius, length, isFront = false }: { type: Moun
   return null;
 };
 
-const PortDraw = ({ x, y, size }: { x: number, y: number, size: number }) => (
+const PortDraw = ({ x, y, size, label }: { x: number, y: number, size: number, label: string }) => (
    <g transform={`translate(${x}, ${y})`}>
-     <rect x={-size} y={-size} width={size*2} height={size*2} fill="white" stroke="black" strokeWidth="1" />
-     <circle cx={0} cy={0} r={size*0.6} fill="none" stroke="black" strokeWidth="0.5" />
+     {/* Spot face / Outer rim */}
+     <circle cx={0} cy={0} r={size} fill="white" stroke="black" strokeWidth="0.5" />
+     {/* Thread Major Dia (Thin, broken 3/4 circle for thread convention) */}
+     <path d={`M ${size*0.8} 0 A ${size*0.8} ${size*0.8} 0 1 1 0 ${-size*0.8}`} fill="none" stroke="black" strokeWidth="0.5" />
+     {/* Thread Minor Dia (Solid thick) */}
+     <circle cx={0} cy={0} r={size * 0.65} fill="none" stroke="black" strokeWidth="1" />
+     
+     {/* Center mark */}
+     <line x1={-size*0.3} y1={0} x2={size*0.3} y2={0} stroke="black" strokeWidth="0.5" />
+     <line x1={0} y1={-size*0.3} x2={0} y2={size*0.3} stroke="black" strokeWidth="0.5" />
+
+     {/* Leader Line for Label */}
+     <g>
+        <path d={`M ${size*0.5} ${-size*0.5} L ${size + 15} ${-size - 15} H ${size + 40}`} fill="none" stroke="black" strokeWidth="0.5" />
+        <text x={size + 42} y={-size - 15} dominantBaseline="middle" className="text-[10px] font-mono">{label}</text>
+     </g>
    </g>
 );
 
@@ -307,7 +312,9 @@ export const CylinderDesigner2D: React.FC = () => {
     rearMount: 'Eye',
     frontMount: 'Eye',
     portPos: 'Top',
-    viewMode: 'Retracted'
+    viewMode: 'Retracted',
+    portLabel: 'G 1/2"',
+    customClosedLength: null
   });
 
   const [zoom, setZoom] = useState(1);
@@ -318,42 +325,61 @@ export const CylinderDesigner2D: React.FC = () => {
   
   // Calculated Dimensions
   const barrelOuterDia = specs.bore + (WALL_THICKNESS * 2);
-  const barrelLength = specs.stroke + 60; // Internal piston length + clearance
   
-  // Mount Offsets (Center of pin/mount to connection face)
+  // Determine radii for mounts
+  const rearMountRadius = barrelOuterDia / 2;
+  const frontMountRadius = Math.max(specs.rod, barrelOuterDia * 0.4);
+
+  // Mount Offsets
   const getMountOffset = (type: MountType, radius: number) => {
      if (type === 'Flange') return 15;
      if (type === 'Thread') return 30;
-     return radius * 1.5; // Eye/Clevis center-to-neck distance
+     return radius * 1.5; 
   };
-
-  // Determine radii for mounts
-  // Rear mount usually robust, related to bore or barrel OD
-  const rearMountRadius = barrelOuterDia / 2;
-  // Front mount relates to Rod, usually head is larger than rod but smaller than barrel
-  const frontMountRadius = Math.max(specs.rod, barrelOuterDia * 0.4);
 
   const rearOffset = getMountOffset(specs.rearMount, rearMountRadius);
   const frontOffset = getMountOffset(specs.frontMount, frontMountRadius);
   
-  // Real Closed Length (Pin to Pin or Face to Face)
-  const retractedLength = rearOffset + barrelLength + frontOffset;
+  // Length Calculation Logic
+  // Default (calculated) Closed Length = rearOffset + barrelLength + frontOffset
+  // If user provides customClosedLength (L), we need to derive barrelLength from it.
+  
+  let barrelLength = 0;
+  let retractedLength = 0;
+  const MIN_PISTON_LENGTH = 60; // Internal mechanical requirement
+
+  if (specs.customClosedLength) {
+      retractedLength = specs.customClosedLength;
+      // Reverse calculate barrel length
+      // L = rearOffset + barrel + frontOffset => barrel = L - rear - front
+      barrelLength = retractedLength - rearOffset - frontOffset;
+      
+      // Validation: Barrel must be at least Stroke + Piston
+      const minBarrel = specs.stroke + MIN_PISTON_LENGTH;
+      if (barrelLength < minBarrel) {
+          // If custom length is physically impossible, force minimum valid length
+          barrelLength = minBarrel;
+          retractedLength = rearOffset + barrelLength + frontOffset;
+      }
+  } else {
+      // Default calculation
+      barrelLength = specs.stroke + MIN_PISTON_LENGTH; 
+      retractedLength = rearOffset + barrelLength + frontOffset;
+  }
+
   const currentLength = specs.viewMode === 'Retracted' ? retractedLength : retractedLength + specs.stroke;
   
   // SHEET LAYOUT CALCULATION (16:9)
   const minMarginX = 100;
   const minMarginY = 150;
   
-  // Determine minimum sheet size needed
   const requiredContentWidth = currentLength + (minMarginX * 2);
   const requiredContentHeight = (barrelOuterDia * 3) + (minMarginY * 2);
-  
   const aspectRatio = 16 / 9;
   
   let sheetWidth = requiredContentWidth;
   let sheetHeight = sheetWidth / aspectRatio;
   
-  // If height is insufficient, scale up based on height
   if (sheetHeight < requiredContentHeight) {
       sheetHeight = requiredContentHeight;
       sheetWidth = sheetHeight * aspectRatio;
@@ -363,15 +389,13 @@ export const CylinderDesigner2D: React.FC = () => {
   const startX = (sheetWidth - currentLength) / 2;
   const centerY = sheetHeight / 2;
   
-  // Positions relative to startX/centerY
+  // Positions
   const barrelStart = startX + rearOffset;
   const barrelEnd = barrelStart + barrelLength;
-  const rodEndAnchor = startX + currentLength; // This is the pin center of front mount
-  
-  // Calculate where the chrome rod physically ends (connecting to the mount)
+  const rodEndAnchor = startX + currentLength; 
   const rodConnectX = rodEndAnchor - (['Eye', 'Clevis'].includes(specs.frontMount) ? frontOffset : 0);
 
-  // Title Block Position (5% margin from bottom right)
+  // Title Block Position
   const titleBlockWidth = 250;
   const titleBlockHeight = 100;
   const titleBlockX = sheetWidth - (sheetWidth * 0.05) - titleBlockWidth;
@@ -379,6 +403,7 @@ export const CylinderDesigner2D: React.FC = () => {
   
   // Ports
   const portSize = 12;
+  const portDist = 45; 
   
   const handleBoreChange = (newBore: number) => {
       let newRod = specs.rod;
@@ -490,6 +515,34 @@ export const CylinderDesigner2D: React.FC = () => {
                         max={2000} 
                         step={10}
                     />
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Closed Length (L)</label>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                type="number" 
+                                value={specs.customClosedLength ?? ''}
+                                placeholder={retractedLength.toFixed(1)}
+                                onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    setSpecs({...specs, customClosedLength: isNaN(val) ? null : val});
+                                }}
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary outline-none"
+                            />
+                            <span className="text-xs font-bold text-gray-400">mm</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-1">Leave empty for auto-calculation</p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Port Size / Thread</label>
+                        <input 
+                            type="text" 
+                            value={specs.portLabel}
+                            onChange={(e) => setSpecs({...specs, portLabel: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary outline-none"
+                        />
+                    </div>
                 </div>
 
                 <hr className="border-gray-100" />
@@ -626,16 +679,31 @@ export const CylinderDesigner2D: React.FC = () => {
                                     width={barrelLength} height={barrelOuterDia} 
                                     fill="white" stroke="black" strokeWidth="1.5"
                                 />
-                                {/* Ports - Centered vertically on the barrel */}
-                                <PortDraw x={30} y={barrelOuterDia / 2} size={portSize} />
-                                <PortDraw x={barrelLength - 30} y={barrelOuterDia / 2} size={portSize} />
+                                
+                                {/* Rear Port with Label & Dimension */}
+                                <PortDraw x={portDist} y={barrelOuterDia / 2} size={portSize} label={specs.portLabel} />
+                                <DimensionLine 
+                                    x1={0} y1={0} 
+                                    x2={portDist} y2={0} 
+                                    offset={-20} 
+                                    text={`${portDist}`} 
+                                />
+
+                                {/* Front Port with Label & Dimension */}
+                                <PortDraw x={barrelLength - portDist} y={barrelOuterDia / 2} size={portSize} label={specs.portLabel} />
+                                <DimensionLine 
+                                    x1={barrelLength - portDist} y1={0} 
+                                    x2={barrelLength} y2={0} 
+                                    offset={-20} 
+                                    text={`${portDist}`} 
+                                />
                                 
                                 {/* Bore Diameter Dimension */}
                                 <DimensionLine 
                                     x1={barrelLength/3} y1={0} 
                                     x2={barrelLength/3} y2={barrelOuterDia} 
                                     vertical 
-                                    text={`Ø${specs.bore} H8`} 
+                                    text={`Ø${specs.bore}`} 
                                 />
                             </g>
 
@@ -657,7 +725,7 @@ export const CylinderDesigner2D: React.FC = () => {
                                             x1={rodVisibleStart + 20} y1={centerY - specs.rod/2} 
                                             x2={rodVisibleStart + 20} y2={centerY + specs.rod/2} 
                                             vertical 
-                                            text={`Ø${specs.rod} f7`} 
+                                            text={`Ø${specs.rod}`} 
                                         />
                                     </g>
                                 );
@@ -677,9 +745,9 @@ export const CylinderDesigner2D: React.FC = () => {
                             {specs.viewMode === 'Extended' && (
                                 <DimensionLine 
                                     x1={barrelEnd} 
-                                    y1={centerY - barrelOuterDia/2 - 40} 
+                                    y1={centerY - barrelOuterDia/2 - 60} 
                                     x2={rodConnectX} 
-                                    y2={centerY - barrelOuterDia/2 - 40} 
+                                    y2={centerY - barrelOuterDia/2 - 60} 
                                     offset={-20}
                                     text={`Stroke = ${specs.stroke} mm`} 
                                 />
