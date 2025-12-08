@@ -737,6 +737,7 @@ export const CylinderDesigner2D: React.FC = () => {
                             {/* Rod starts inside barrel and extends to rodConnectX */}
                             {(() => {
                                 const rodVisibleStart = barrelEnd;
+                                const rodVisibleMid = (rodVisibleStart + rodConnectX) / 2;
                                 return (
                                     <g>
                                         <rect 
@@ -748,8 +749,8 @@ export const CylinderDesigner2D: React.FC = () => {
                                         />
                                         {/* Rod Diameter Dimension */}
                                         <DimensionLine 
-                                            x1={rodVisibleStart + 20} y1={centerY - specs.rod/2} 
-                                            x2={rodVisibleStart + 20} y2={centerY + specs.rod/2} 
+                                            x1={rodVisibleMid} y1={centerY - specs.rod/2} 
+                                            x2={rodVisibleMid} y2={centerY + specs.rod/2} 
                                             vertical 
                                             text={`Ø${specs.rod}`} 
                                         />
