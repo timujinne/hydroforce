@@ -1,3 +1,5 @@
+import React from 'react';
+
 declare module 'react-router-hash-link' {
 
   import * as React from 'react';
