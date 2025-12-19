@@ -417,7 +417,7 @@ export const CylinderDesigner2D: React.FC = () => {
   const barrelStart = startX + rearOffset;
   const barrelEnd = barrelStart + barrelLength;
   const rodEndAnchor = startX + currentLength; 
-  const rodConnectX = rodEndAnchor - (['Eye', 'Clevis'].includes(specs.frontMount) ? frontOffset : 0);
+  const rodConnectX = rodEndAnchor - frontOffset;
 
   // Title Block Position
   const titleBlockWidth = 250;

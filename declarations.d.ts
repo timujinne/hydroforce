@@ -1,3 +1,5 @@
+export {};
+
 declare module 'react-router-hash-link' {
 
   import * as React from 'react';
