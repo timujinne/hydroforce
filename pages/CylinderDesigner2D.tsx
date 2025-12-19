@@ -350,7 +350,7 @@ export const CylinderDesigner2D: React.FC = () => {
                             value={specs.portLabel} 
                             onChange={(e) => setSpecs({...specs, portLabel: e.target.value})}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary outline-none"
-                            placeholder="e.g. G 3/8\""
+                            placeholder='e.g. G 3/8"'
                         />
                     </div>
                 </div>
