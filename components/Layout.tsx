@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { Menu, X, Phone, Mail, MapPin, ArrowRight, Facebook, Linkedin, ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 
-export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Added optional children type to resolve "Property 'children' is missing" error in App.tsx
+export const Layout = ({ children }: { children?: React.ReactNode }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   
@@ -64,12 +66,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-
-    // ---------------------------------------------------------
-    // TODO: Replace 'YOUR_FORMSPREE_ID' with your actual Formspree Form ID
-    // Register at https://formspree.io to get one.
-    // Example: https://formspree.io/f/xwqbjzvq
-    // ---------------------------------------------------------
     const FORMSPREE_ENDPOINT = "https://formspree.io/f/xqanlwzb"; 
 
     try {
@@ -84,7 +80,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       if (response.ok) {
         setFormStatus('success');
         form.reset();
-        setTimeout(() => setFormStatus('idle'), 5000); // Reset status after 5 seconds
+        setTimeout(() => setFormStatus('idle'), 5000);
       } else {
         setFormStatus('error');
         const data = await response.json();
@@ -262,7 +258,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div>
                 <div className="mb-10">
                      <div className="bg-white rounded-xl inline-block mb-8 shadow-xl overflow-hidden w-[220px] md:w-[280px]">
-                        {/* Footer Logo: Maximized size, no padding */}
                         <img 
                             src="https://www.hydroforce.ee/wp-content/uploads/2025/03/Logo-Main-SVG.svg" 
                             alt="Hydroforce" 

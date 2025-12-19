@@ -18,7 +18,7 @@ import { CylinderShowcase } from './pages/CylinderShowcase';
 import { CylinderConfigurator } from './pages/CylinderConfigurator';
 import { CylinderDesigner2D } from './pages/CylinderDesigner2D';
 
-const App: React.FC = () => {
+export const App: React.FC = () => {
   return (
     <Router>
       <Layout>

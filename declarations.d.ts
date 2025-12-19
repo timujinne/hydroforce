@@ -1,6 +1,3 @@
-// Added export {} to ensure this file is treated as a module, allowing 'declare global' to augment the global JSX namespace.
-export {};
-
 declare module 'react-router-hash-link' {
   import * as React from 'react';
   import { LinkProps } from 'react-router-dom';
@@ -18,26 +15,24 @@ declare module 'react-router-hash-link' {
   >;
 }
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      // Three.js elements
-      group: any;
-      mesh: any;
-      cylinderGeometry: any;
-      boxGeometry: any;
-      torusGeometry: any;
-      extrudeGeometry: any;
-      meshStandardMaterial: any;
-      primitive: any;
-      ambientLight: any;
-      spotLight: any;
-      pointLight: any;
-      directionalLight: any;
-      perspectiveCamera: any;
-      object3D: any;
-      // Catch-all for any other elements
-      [elemName: string]: any;
-    }
+declare namespace JSX {
+  interface IntrinsicElements {
+    // Three.js elements
+    group: any;
+    mesh: any;
+    cylinderGeometry: any;
+    boxGeometry: any;
+    torusGeometry: any;
+    extrudeGeometry: any;
+    meshStandardMaterial: any;
+    primitive: any;
+    ambientLight: any;
+    spotLight: any;
+    pointLight: any;
+    directionalLight: any;
+    perspectiveCamera: any;
+    object3D: any;
+    // Catch-all for any other elements
+    [elemName: string]: any;
   }
 }

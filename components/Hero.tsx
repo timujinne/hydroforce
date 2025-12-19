@@ -2,7 +2,7 @@ import React from 'react';
 import { HeroProps } from '../types';
 import { HashLink } from 'react-router-hash-link';
 
-export const Hero: React.FC<HeroProps> = ({ 
+export const Hero = ({ 
   title, 
   subtitle, 
   description, 
@@ -10,7 +10,7 @@ export const Hero: React.FC<HeroProps> = ({
   bgImage, 
   overlayType = 'normal',
   buttons 
-}) => {
+}: HeroProps) => {
   
   let overlayGradient = 'linear-gradient(rgba(2, 24, 34, 0.8), rgba(1, 87, 125, 0.1))';
   let textColor = 'text-white';
@@ -45,7 +45,7 @@ export const Hero: React.FC<HeroProps> = ({
 
           {stats && (
             <div className="flex flex-wrap gap-6 mb-12">
-              {stats.map((stat, index) => (
+              {stats.map((stat: { label: string; value: string }, index: number) => (
                 <div 
                   key={index}
                   className={`px-8 py-5 rounded-xl backdrop-blur-xl border shadow-2xl transition-transform hover:-translate-y-1 duration-300 ${
@@ -67,7 +67,7 @@ export const Hero: React.FC<HeroProps> = ({
 
           {buttons && (
             <div className="flex flex-wrap gap-4">
-              {buttons.map((btn, idx) => (
+              {buttons.map((btn: { label: string; link: string; type: string }, idx: number) => (
                 <HashLink
                   key={idx}
                   smooth
