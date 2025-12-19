@@ -396,15 +396,15 @@ const MountingOption = ({ id, label, selected, onSelect, icon }: { id: string, l
       cursor-pointer rounded-lg p-3 border-2 transition-all duration-200 flex flex-col items-center justify-center text-center gap-2 h-24
       ${selected 
         ? 'border-primary bg-primary/5 shadow-md' 
-        : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }
     `}
   >
     <div className={`${selected ? 'text-primary' : 'text-gray-400'}`}>
         {icon || <Box size={24} />}
     </div>
-    <span className={`text-xs font-bold ${selected ? 'text-primary' : 'text-gray-600'}`}>{id}</span>
-    <span className="text-[10px] text-gray-500 leading-tight px-1">{label}</span>
+    <span className={`text-xs font-bold ${selected ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`}>{id}</span>
+    <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight px-1">{label}</span>
   </div>
 );
 
@@ -415,22 +415,22 @@ const PortOption = ({ id, label, selected, onSelect, type }: { id: string, label
       cursor-pointer rounded-lg p-3 border-2 transition-all duration-200 flex flex-col items-center justify-center text-center gap-1 min-h-[80px]
       ${selected 
         ? 'border-primary bg-primary/5 shadow-sm' 
-        : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }
     `}
   >
     <div className={`${selected ? 'text-primary' : 'text-gray-400'} mb-1`}>
         {type === 'thread' ? <Circle size={18} /> : <Square size={18} />}
     </div>
-    <span className={`text-xs font-bold leading-tight ${selected ? 'text-primary' : 'text-gray-700'}`}>{id}</span>
-    <span className="text-[9px] text-gray-400">{label}</span>
+    <span className={`text-xs font-bold leading-tight ${selected ? 'text-primary' : 'text-gray-700 dark:text-gray-300'}`}>{id}</span>
+    <span className="text-[9px] text-gray-400 dark:text-gray-500">{label}</span>
   </div>
 );
 
 const SliderControl = ({ label, value, onChange, min, max, suffix = "mm" }: { label: string, value: number, onChange: (val: number) => void, min: number, max: number, suffix?: string }) => (
   <div className="mb-6">
      <div className="flex justify-between items-center mb-2">
-        <label className="text-sm font-bold text-gray-700">{label}</label>
+        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">{label}</label>
         <div className="flex items-center gap-2">
             <input 
                type="number" 
@@ -439,7 +439,7 @@ const SliderControl = ({ label, value, onChange, min, max, suffix = "mm" }: { la
                    const val = parseInt(e.target.value);
                    if (!isNaN(val)) onChange(Math.max(min, Math.min(max, val)));
                }}
-               className="w-20 text-right p-1.5 border border-gray-300 rounded-md text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all"
+               className="w-20 text-right p-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all shadow-sm"
                min={min} max={max}
             />
             <span className="text-xs font-bold text-gray-400 w-6">{suffix}</span>
@@ -452,7 +452,7 @@ const SliderControl = ({ label, value, onChange, min, max, suffix = "mm" }: { la
             max={max} 
             value={value}
             onChange={(e) => onChange(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-light z-10 relative"
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-light z-10 relative"
         />
      </div>
      <div className="flex justify-between text-[10px] uppercase font-bold text-gray-400 mt-1 tracking-wider">
@@ -494,11 +494,11 @@ export const CylinderConfigurator: React.FC = () => {
         keywords={['Hydraulic Cylinder Configurator', '3D CAD', 'Custom Hydraulics']}
       />
       
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-white dark:bg-gray-900">
         
         {/* Left Panel: 3D View */}
-        <div className="w-full lg:w-3/5 h-[50vh] lg:h-full relative bg-gray-100 border-r border-gray-200 order-1 lg:order-1">
-           <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold text-primary shadow-sm">
+        <div className="w-full lg:w-3/5 h-[50vh] lg:h-full relative bg-gray-100 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 order-1 lg:order-1">
+           <div className="absolute top-4 left-4 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold text-primary dark:text-primary-light shadow-sm">
               Interactive Preview
            </div>
            
@@ -513,10 +513,10 @@ export const CylinderConfigurator: React.FC = () => {
            </Canvas>
 
            {/* Actuation Control Overlay */}
-           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-3/4 max-w-md bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-gray-200">
+           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-3/4 max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-2">
-                 <span className="text-xs font-bold uppercase text-gray-500">Test Actuation</span>
-                 <span className="text-xs font-mono text-primary font-bold">{(config.extension * 100).toFixed(0)}%</span>
+                 <span className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Test Actuation</span>
+                 <span className="text-xs font-mono text-primary dark:text-primary-light font-bold">{(config.extension * 100).toFixed(0)}%</span>
               </div>
               <input 
                 type="range" 
@@ -525,22 +525,22 @@ export const CylinderConfigurator: React.FC = () => {
                 step="0.01" 
                 value={config.extension}
                 onChange={(e) => handleChange('extension', parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary"
               />
            </div>
         </div>
 
         {/* Right Panel: Configuration Form */}
-        <div className="w-full lg:w-2/5 h-[50vh] lg:h-full overflow-y-auto bg-white p-6 lg:p-10 order-2 lg:order-2 shadow-2xl z-10">
+        <div className="w-full lg:w-2/5 h-[50vh] lg:h-full overflow-y-auto bg-white dark:bg-gray-800 p-6 lg:p-10 order-2 lg:order-2 shadow-2xl z-10">
            <div className="max-w-xl mx-auto">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">Configure Your Cylinder</h1>
-              <p className="text-sm text-gray-500 mb-8">Define your specifications below. The 3D model updates automatically.</p>
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Configure Your Cylinder</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Define your specifications below. The 3D model updates automatically.</p>
 
               {/* Type Selection */}
               <div className="mb-8">
-                 <label className="block text-sm font-bold text-gray-700 mb-2">Type <span className="text-red-500">*</span></label>
+                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Type <span className="text-red-500">*</span></label>
                  <select 
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                     value={config.type}
                     onChange={(e) => handleChange('type', e.target.value)}
                  >
@@ -552,7 +552,7 @@ export const CylinderConfigurator: React.FC = () => {
 
               {/* Rear Mounting (Cap) */}
               <div className="mb-6">
-                 <label className="block text-sm font-bold text-gray-700 mb-3">Rear Mounting (Cap) <span className="text-red-500">*</span></label>
+                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Rear Mounting (Cap) <span className="text-red-500">*</span></label>
                  <div className="grid grid-cols-4 gap-2">
                     <MountingOption 
                         id="M0" 
@@ -587,7 +587,7 @@ export const CylinderConfigurator: React.FC = () => {
 
               {/* Front Mounting (Head) */}
               <div className="mb-8">
-                 <label className="block text-sm font-bold text-gray-700 mb-3">Front Mounting (Head) <span className="text-red-500">*</span></label>
+                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Front Mounting (Head) <span className="text-red-500">*</span></label>
                  <div className="grid grid-cols-4 gap-2">
                     <MountingOption 
                         id="M0" 
@@ -635,7 +635,7 @@ export const CylinderConfigurator: React.FC = () => {
 
               {/* Hydraulic Ports */}
               <div className="mb-8">
-                 <label className="block text-sm font-bold text-gray-700 mb-3">Hydraulic Ports</label>
+                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Hydraulic Ports</label>
                  <div className="grid grid-cols-3 gap-2">
                     <PortOption id="BSP" label="G Thread" selected={config.portType === 'BSP'} onSelect={() => handleChange('portType', 'BSP')} type="thread" />
                     <PortOption id="Metric" label="M Thread" selected={config.portType === 'METRIC'} onSelect={() => handleChange('portType', 'METRIC')} type="thread" />
@@ -648,7 +648,7 @@ export const CylinderConfigurator: React.FC = () => {
 
               {/* Rod Coating */}
               <div className="mb-8">
-                 <label className="block text-sm font-bold text-gray-700 mb-3">Piston Rod Material / Coating <span className="text-red-500">*</span></label>
+                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Piston Rod Material / Coating <span className="text-red-500">*</span></label>
                  <div className="space-y-3">
                     {[
                         { id: 'W', label: 'Welded (Standard)', desc: 'Standard chrome plated C45E' },
@@ -656,7 +656,7 @@ export const CylinderConfigurator: React.FC = () => {
                         { id: 'HC', label: 'Hardened + Hard Chrome', desc: 'Extreme wear resistance' },
                         { id: 'NC', label: 'Nickel Plated + Chrome', desc: 'Superior corrosion resistance (Marine)' }
                     ].map((opt) => (
-                        <label key={opt.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${config.coating === opt.id ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'}`}>
+                        <label key={opt.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${config.coating === opt.id ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
                            <input 
                               type="radio" 
                               name="rod_coating" 
@@ -665,8 +665,8 @@ export const CylinderConfigurator: React.FC = () => {
                               className="mt-1 accent-primary"
                            />
                            <div>
-                              <div className="text-sm font-bold text-gray-800">{opt.label}</div>
-                              <div className="text-xs text-gray-500">{opt.desc}</div>
+                              <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{opt.label}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{opt.desc}</div>
                            </div>
                         </label>
                     ))}
@@ -674,11 +674,11 @@ export const CylinderConfigurator: React.FC = () => {
               </div>
               
               {/* Action Buttons */}
-              <div className="flex gap-4 pt-4 border-t border-gray-100">
+              <div className="flex gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button className="flex-1 bg-primary text-white font-bold py-4 rounded-lg shadow-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2">
                      <Check size={20} /> Request Quote
                   </button>
-                  <button className="px-6 py-4 border-2 border-gray-200 text-gray-600 font-bold rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                  <button className="px-6 py-4 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-lg hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
                      <Download size={20} /> PDF
                   </button>
               </div>
