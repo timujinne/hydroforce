@@ -1,3 +1,6 @@
+// Added export {} to ensure this file is treated as a module, allowing 'declare global' to augment the global JSX namespace.
+export {};
+
 declare module 'react-router-hash-link' {
   import * as React from 'react';
   import { LinkProps } from 'react-router-dom';
@@ -38,5 +41,3 @@ declare global {
     }
   }
 }
-
-export {};
