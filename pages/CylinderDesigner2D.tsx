@@ -1,12 +1,14 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import { SEO } from '../components/SEO';
-import { Download, Ruler, Printer, ZoomIn, ZoomOut, RefreshCw, Tag, Anchor, Settings2, Maximize2 } from 'lucide-react';
+import { Download, Ruler, Printer, ZoomIn, ZoomOut, RefreshCw, Tag, Anchor, Settings2, Maximize2, GitMerge } from 'lucide-react';
 
 // Types
 type MountType = 'Hole' | 'Point' | 'Fork' | 'Flange' | 'Trunnion' | 'Thread';
+type ActionType = 'Double Action' | 'Push' | 'Pull';
 
 interface CylinderSpecs {
+  cylinderType: ActionType;
   bore: number;
   rod: number;
   stroke: number;
@@ -225,6 +227,7 @@ const SliderControl = ({ label, value, onChange, min, max, step = 1, suffix = "m
 
 export const CylinderDesigner2D: React.FC = () => {
   const [specs, setSpecs] = useState<CylinderSpecs>({
+    cylinderType: 'Double Action',
     bore: 80,
     rod: 45,
     stroke: 400,
@@ -362,6 +365,21 @@ export const CylinderDesigner2D: React.FC = () => {
                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Settings2 className="w-4 h-4" /> Component Geometry
                     </h3>
+
+                    {/* Cylinder Type Selection */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Cylinder Type</label>
+                        <select 
+                            value={specs.cylinderType} 
+                            onChange={(e) => setSpecs({...specs, cylinderType: e.target.value as ActionType})} 
+                            className="w-full p-2 border border-white/10 rounded bg-black/20 text-white text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
+                        >
+                            <option value="Double Action">Double Action</option>
+                            <option value="Push">Push (Single Acting)</option>
+                            <option value="Pull">Pull (Single Acting)</option>
+                        </select>
+                    </div>
+
                     <SliderControl label="Bore Ø" value={specs.bore} onChange={handleBoreChange} min={30} max={300} step={5} />
                     <SliderControl label="Rod Ø" value={specs.rod} onChange={(v) => setSpecs({...specs, rod: v})} min={10} max={Math.max(10, specs.bore - 10)} step={5} />
                     <SliderControl label="Stroke" value={specs.stroke} onChange={(v) => setSpecs({...specs, stroke: v, productLabel: `HC-${specs.bore}-${v}`})} min={50} max={2000} step={10} />
@@ -474,14 +492,22 @@ export const CylinderDesigner2D: React.FC = () => {
                         <rect x={barrelEnd - GLAND_THICKNESS} y={centerY - specs.rod/2 - 2} width={GLAND_THICKNESS} height={specs.rod + 4} fill="white" stroke="none" />
 
                         {/* 4. Details: Ports & Label */}
-                        <g transform={`translate(${barrelStart + portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
-                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
-                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
-                        </g>
-                        <g transform={`translate(${barrelEnd - portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
-                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
-                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
-                        </g>
+                        
+                        {/* Left/Rear Port - Hidden if Pull */}
+                        {specs.cylinderType !== 'Pull' && (
+                            <g transform={`translate(${barrelStart + portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
+                               <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
+                               <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
+                            </g>
+                        )}
+
+                        {/* Right/Front Port - Hidden if Push */}
+                        {specs.cylinderType !== 'Push' && (
+                            <g transform={`translate(${barrelEnd - portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
+                               <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
+                               <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
+                            </g>
+                        )}
 
                         <g transform={`translate(${barrelStart + defaultBarrelLength/2 - 40}, ${centerY - barrelOuterDia/2 + 2})`}>
                             <rect x={0} y={0} width={80} height={WALL_THICKNESS - 4} fill="#eee" stroke="black" strokeWidth="0.5" />
