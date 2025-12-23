@@ -307,6 +307,32 @@ export const CylinderDesigner2D: React.FC = () => {
   // Port placement adjusted inward from edges to avoid weld seams
   const portDistFromEdge = 75;
 
+  // Helper to calculate outermost dimensions of mounts for "General Size"
+  const getMountExtremeX = (type: MountType, center: number, radius: number, length: number, isRear: boolean) => {
+      // Trunnion block width is 40, so +/- 20 from center
+      if (type === 'Trunnion') {
+          return isRear ? center - 20 : center + 20;
+      }
+      
+      if (isRear) {
+          // Rear Mounts (Left side)
+          // Holes/Points/Forks extend 'radius' left from center
+          if (type === 'Hole' || type === 'Point' || type === 'Fork') {
+              return center - radius;
+          }
+          // Flange/Thread start at center (0) and go right, so 'center' is the leftmost point
+          return center;
+      } else {
+          // Front Mounts (Right side)
+          // Visual draws mount extending to 'length' (offset) to the right from center
+          return center + length;
+      }
+  };
+
+  const generalStart = getMountExtremeX(specs.rearMount, centerRear, rearMountVisualRadius, rearOffset, true);
+  const generalEnd = getMountExtremeX(specs.frontMount, centerFront, frontMountVisualRadius, frontOffset, false);
+  const generalSize = generalEnd - generalStart;
+
   const handleBoreChange = (newBore: number) => {
       let newRod = specs.rod;
       if (newRod >= newBore - 10) {
@@ -472,6 +498,18 @@ export const CylinderDesigner2D: React.FC = () => {
 
                         {/* 6. DIMENSIONS (Attached directly to part boundaries) */}
                         
+                        {/* General Size (Total Length) - Top Dimension */}
+                        <DimensionLine 
+                            x1={generalStart} 
+                            y1={centerY} 
+                            x2={generalEnd} 
+                            y2={centerY} 
+                            text={`${generalSize.toFixed(1)}`} 
+                            offset={-180} 
+                            color="red" 
+                            textColor="red" 
+                        />
+
                         {/* Bore Ø - Positioned inside chamber */}
                         <DimensionLine 
                             x1={chamberStart + 180} 
