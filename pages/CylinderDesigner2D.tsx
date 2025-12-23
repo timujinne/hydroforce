@@ -250,7 +250,9 @@ export const CylinderDesigner2D: React.FC = () => {
   const PISTON_LENGTH = 80;
   const END_CAP_THICKNESS = 40;
   const GLAND_THICKNESS = 45;
-  const ROD_EXTENSION_WHEN_RETRACTED = 22;
+  
+  // Extra visible rod length (stick-out / K dimension)
+  const ROD_STICK_OUT = 30; 
 
   // Mounting Geometry
   const rearMountVisualRadius = specs.eyeDia / 2;
@@ -258,9 +260,9 @@ export const CylinderDesigner2D: React.FC = () => {
 
   const getMountOffset = (type: MountType, radius: number) => {
      if (type === 'Flange') return 18;
-     if (type === 'Thread') return 35;
+     if (type === 'Thread') return 40;
      if (type === 'Trunnion') return 25;
-     return radius * 1.5; 
+     return radius * 1.6; 
   };
 
   const rearOffset = getMountOffset(specs.rearMount, rearMountVisualRadius);
@@ -272,7 +274,8 @@ export const CylinderDesigner2D: React.FC = () => {
   const defaultBarrelLength = chamberLength + END_CAP_THICKNESS + GLAND_THICKNESS;
   
   // Base retracted length center-to-center
-  const defaultRetractedLength = rearOffset + defaultBarrelLength + frontOffset;
+  // Includes rod stick-out now
+  const defaultRetractedLength = rearOffset + defaultBarrelLength + ROD_STICK_OUT + frontOffset;
 
   let retractedLength = defaultRetractedLength;
   if (specs.customClosedLength !== null && specs.customClosedLength > defaultRetractedLength) {
@@ -286,7 +289,7 @@ export const CylinderDesigner2D: React.FC = () => {
   const currentExtensionMm = specs.stroke * (extension / 100);
 
   const barrelOuterDia = specs.bore + (WALL_THICKNESS * 2);
-  const totalVisLength = retractedLength + currentExtensionMm + ROD_EXTENSION_WHEN_RETRACTED;
+  const totalVisLength = retractedLength + currentExtensionMm + 50;
   const startX = (sheetWidth - totalVisLength) / 2;
   const centerY = sheetHeight / 2;
 
@@ -304,8 +307,12 @@ export const CylinderDesigner2D: React.FC = () => {
 
   // Rod start point must be end of piston
   const rodStartX = pistonEnd;
-  // Adjusted rod end: stops at the interface with the front mount (visual radius)
-  const rodEndX = centerFront - frontMountVisualRadius;
+  
+  // Rod End Calculation
+  const isShoulderMount = specs.frontMount === 'Thread' || specs.frontMount === 'Flange';
+  const rodEndX = isShoulderMount 
+      ? centerFront - frontOffset 
+      : centerFront - frontMountVisualRadius;
 
   // Port placement adjusted inward from edges to avoid weld seams
   const portDistFromEdge = 75;
@@ -486,11 +493,12 @@ export const CylinderDesigner2D: React.FC = () => {
                             <rect x={PISTON_LENGTH - 25} y={0} width={10} height={specs.bore} fill="#333" />
                         </g>
 
-                        {/* 3. Rod Geometry - MUST start at pistonEnd */}
-                        <rect x={rodStartX} y={centerY - specs.rod/2} width={rodEndX - rodStartX} height={specs.rod} fill="url(#hatch-rod)" stroke="black" strokeWidth="1.2" />
-                        {/* Gland rod clearance hole */}
+                        {/* Gland rod clearance hole (MASK) - Moved BEFORE Rod */}
                         <rect x={barrelEnd - GLAND_THICKNESS} y={centerY - specs.rod/2 - 2} width={GLAND_THICKNESS} height={specs.rod + 4} fill="white" stroke="none" />
 
+                        {/* 3. Rod Geometry - MUST start at pistonEnd */}
+                        <rect x={rodStartX} y={centerY - specs.rod/2} width={rodEndX - rodStartX} height={specs.rod} fill="url(#hatch-rod)" stroke="black" strokeWidth="1.2" />
+                        
                         {/* 4. Details: Ports & Label */}
                         
                         {/* Left/Rear Port - Hidden if Pull */}
@@ -516,11 +524,11 @@ export const CylinderDesigner2D: React.FC = () => {
 
                         {/* 5. Mounts */}
                         <MountDraw type={specs.rearMount} x={centerRear} y={centerY} radius={rearMountVisualRadius} pinRadius={specs.pinDia/2} length={rearOffset} />
-                        {/* Front Mount flipped (isFront={false}) to orient outwards from rod end */}
-                        <MountDraw type={specs.frontMount} x={centerFront} y={centerY} radius={frontMountVisualRadius} pinRadius={specs.pinDia/2} length={frontOffset} isFront={false} />
+                        {/* Front Mount flipped (isFront={true}) to orient inwards to rod end */}
+                        <MountDraw type={specs.frontMount} x={centerFront} y={centerY} radius={frontMountVisualRadius} pinRadius={specs.pinDia/2} length={frontOffset} isFront={true} />
 
                         {/* Centerline */}
-                        <line x1={centerRear - 50} y1={centerY} x2={centerFront + ROD_EXTENSION_WHEN_RETRACTED + 50} y2={centerY} stroke="#666" strokeWidth="0.5" strokeDasharray="15,4,2,4" />
+                        <line x1={centerRear - 50} y1={centerY} x2={centerFront + 50} y2={centerY} stroke="#666" strokeWidth="0.5" strokeDasharray="15,4,2,4" />
 
                         {/* 6. DIMENSIONS (Attached directly to part boundaries) */}
                         
