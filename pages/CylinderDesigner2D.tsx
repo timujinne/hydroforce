@@ -421,7 +421,7 @@ export const CylinderDesigner2D: React.FC = () => {
                         <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="red" /></marker>
                         <marker id="arrow-start-red" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"><path d="M9,0 L9,6 L0,3 z" fill="red" /></marker>
                         <pattern id="hatch-section" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#333" strokeWidth="0.5" /></pattern>
-                        <pattern id="hatch-rod" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#ccc" strokeWidth="2" /></pattern>
+                        <pattern id="hatch-rod" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#ccc" strokeWidth="2" /></pattern>
                     </defs>
 
                     <text x={sheetWidth / 2} y={centerY - 220} textAnchor="middle" className="text-2xl font-bold fill-[#0a6a94] uppercase tracking-widest">Hydraulic Cylinder</text>
@@ -507,18 +507,6 @@ export const CylinderDesigner2D: React.FC = () => {
                             vertical 
                             text={`${barrelOuterDia.toFixed(1)}`} 
                             offset={80} 
-                        />
-
-                        {/* Rod extension (22mm) */}
-                        <DimensionLine 
-                            x1={barrelEnd} 
-                            y1={centerY + barrelOuterDia/2} 
-                            x2={centerFront} 
-                            y2={centerY + barrelOuterDia/2} 
-                            text={`${ROD_EXTENSION_WHEN_RETRACTED.toFixed(0)}`} 
-                            offset={40} 
-                            color="red" 
-                            textColor="red" 
                         />
 
                         {/* Stroke (Static Capacity Measurement) */}
