@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 import { SEO } from '../components/SEO';
 import { Download, Ruler, Printer, ZoomIn, ZoomOut, RefreshCw, Tag, Anchor, Settings2, Maximize2 } from 'lucide-react';
 
 // Types
-type MountType = 'Eye' | 'Point' | 'Fork' | 'Flange' | 'Trunnion' | 'Thread';
+type MountType = 'Hole' | 'Point' | 'Fork' | 'Flange' | 'Trunnion' | 'Thread';
 
 interface CylinderSpecs {
   bore: number;
@@ -45,34 +46,48 @@ const DimensionLine = ({
   let textY = 0;
   let rotation = 0;
 
+  // Overshoot for extension lines past the dimension arrow
+  const overshoot = offset > 0 ? 5 : -5;
+
   if (vertical) {
-    const lineX = x1 - offset;
+    const lineX = x1 + offset;
     linePath = `M ${lineX},${y1} L ${lineX},${y2}`;
-    ext1Path = `M ${x1},${y1} L ${lineX - 2},${y1}`;
-    ext2Path = `M ${x2},${y2} L ${lineX - 2},${y2}`;
-    textX = lineX - 8;
+    // Extension lines from the part to the dimension line + overshoot
+    ext1Path = `M ${x1},${y1} L ${lineX + overshoot},${y1}`;
+    ext2Path = `M ${x2},${y2} L ${lineX + overshoot},${y2}`;
+    textX = lineX + (offset > 0 ? 12 : -12);
     textY = midY;
     rotation = -90;
   } else {
     const lineY = y1 + offset;
     linePath = `M ${x1},${lineY} L ${x2},${lineY}`;
-    ext1Path = `M ${x1},${y1} L ${x1},${lineY + 2}`;
-    ext2Path = `M ${x2},${y2} L ${x2},${lineY + 2}`;
+    // Extension lines from the part to the dimension line + overshoot
+    ext1Path = `M ${x1},${y1} L ${x1},${lineY + overshoot}`;
+    ext2Path = `M ${x2},${y2} L ${x2},${lineY + overshoot}`;
     textX = midX;
-    textY = offset < 0 ? lineY - 8 : lineY + 12;
+    textY = offset < 0 ? lineY - 10 : lineY + 15;
   }
 
   return (
-    <g className="dimension">
-      <path d={ext1Path} stroke={color} strokeWidth="0.5" fill="none" />
-      <path d={ext2Path} stroke={color} strokeWidth="0.5" fill="none" />
+    <g className="dimension transition-all duration-300">
+      <path d={ext1Path} stroke={color} strokeWidth="0.5" fill="none" opacity="0.8" />
+      <path d={ext2Path} stroke={color} strokeWidth="0.5" fill="none" opacity="0.8" />
       <path 
         d={linePath} 
         stroke={color} 
-        strokeWidth="0.5" 
+        strokeWidth="0.8" 
         fill="none" 
         markerEnd={`url(#arrow-${color === 'red' ? 'red' : 'black'})`} 
         markerStart={`url(#arrow-start-${color === 'red' ? 'red' : 'black'})`}
+      />
+      <rect 
+        x={textX - (text.length * 4)} 
+        y={textY - 7} 
+        width={text.length * 8} 
+        height={14} 
+        fill="white" 
+        opacity="0.9"
+        transform={rotation ? `rotate(${rotation}, ${textX}, ${textY})` : undefined}
       />
       <text 
         x={textX} 
@@ -80,7 +95,7 @@ const DimensionLine = ({
         textAnchor="middle" 
         dominantBaseline="middle" 
         transform={rotation ? `rotate(${rotation}, ${textX}, ${textY})` : undefined}
-        className="text-[11px] font-mono font-bold"
+        className="text-[12px] font-mono font-bold"
         fill={textColor}
       >
         {text}
@@ -96,21 +111,27 @@ const SectionHatch = ({ x, y, width, height }: { x: number, y: number, width: nu
 const MountDraw = ({ type, x, y, radius, pinRadius, length, isFront = false }: { type: MountType, x: number, y: number, radius: number, pinRadius: number, length: number, isFront?: boolean }) => {
   const dir = isFront ? -1 : 1;
   
-  if (type === 'Eye' || type === 'Point' || type === 'Fork') {
+  if (type === 'Hole' || type === 'Point' || type === 'Fork') {
     const outerR = radius;
     const innerR = pinRadius;
-    const neckHeight = radius * 1.4;
+    const neckHeight = radius * 2.0; 
     const faceX = dir * length;
     
     return (
       <g transform={`translate(${x}, ${y})`}>
          {/* Housing Body Boundary */}
-         <path 
-           d={`M 0 ${-outerR} A ${outerR} ${outerR} 0 1 ${isFront ? 1 : 0} 0 ${outerR} L ${faceX} ${neckHeight/2} L ${faceX} ${-neckHeight/2} Z`} 
-           fill="#f0f0f0" stroke="black" strokeWidth="1.5" strokeLinejoin="round"
-         />
+         {type === 'Hole' ? (
+            <path 
+              d={`M ${dir * outerR} ${-outerR} L ${dir * -outerR} ${-outerR} L ${dir * -outerR} ${outerR} L ${dir * outerR} ${outerR} L ${faceX} ${outerR} L ${faceX} ${-outerR} Z`} 
+              fill="#f0f0f0" stroke="black" strokeWidth="1.5" strokeLinejoin="round"
+            />
+         ) : (
+            <path 
+              d={`M 0 ${-outerR} A ${outerR} ${outerR} 0 1 ${isFront ? 1 : 0} 0 ${outerR} L ${faceX} ${neckHeight/2} L ${faceX} ${-neckHeight/2} Z`} 
+              fill="#f0f0f0" stroke="black" strokeWidth="1.5" strokeLinejoin="round"
+            />
+         )}
          
-         {/* Fork specific internal lines representing the "ears" in section */}
          {type === 'Fork' && (
            <>
              <line x1={0} y1={-innerR * 1.2} x2={faceX} y2={-innerR * 1.2} stroke="black" strokeWidth="0.8" />
@@ -120,9 +141,6 @@ const MountDraw = ({ type, x, y, radius, pinRadius, length, isFront = false }: {
 
          {/* Internal Pin Hole */}
          <circle cx={0} cy={0} r={innerR} fill="white" stroke="black" strokeWidth="1.5" />
-         
-         {/* Visual Bearing detail for Eye */}
-         {type === 'Eye' && <circle cx={0} cy={0} r={innerR * 1.25} fill="none" stroke="black" strokeWidth="0.5" />}
          
          {/* Pin Centerlines */}
          <line x1={-outerR * 1.2} y1={0} x2={outerR * 1.2} y2={0} stroke="#666" strokeWidth="0.5" strokeDasharray="5,2,1,2" />
@@ -210,23 +228,28 @@ export const CylinderDesigner2D: React.FC = () => {
     bore: 80,
     rod: 45,
     stroke: 400,
-    rearMount: 'Point',
-    frontMount: 'Fork',
+    rearMount: 'Hole',
+    frontMount: 'Hole',
     portPos: 'Top',
-    portLabel: 'G 3/8"',
+    portLabel: 'G 1/2"',
     productLabel: 'HC-80-400',
     customClosedLength: null,
-    pinDia: 25,
-    eyeDia: 60
+    pinDia: 30.5,
+    eyeDia: 55
   });
 
+  const [extension, setExtension] = useState(0); // 0-100%
   const [zoom, setZoom] = useState(1);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // Constants
   const WALL_THICKNESS = 10;
-  const barrelOuterDia = specs.bore + (WALL_THICKNESS * 2);
-  
-  // Use the Eye Diameter spec for visual mounting circle
+  const PISTON_LENGTH = 80;
+  const END_CAP_THICKNESS = 40;
+  const GLAND_THICKNESS = 45;
+  const ROD_EXTENSION_WHEN_RETRACTED = 22;
+
+  // Mounting Geometry
   const rearMountVisualRadius = specs.eyeDia / 2;
   const frontMountVisualRadius = specs.eyeDia / 2;
 
@@ -240,39 +263,49 @@ export const CylinderDesigner2D: React.FC = () => {
   const rearOffset = getMountOffset(specs.rearMount, rearMountVisualRadius);
   const frontOffset = getMountOffset(specs.frontMount, frontMountVisualRadius);
   
-  const MIN_PISTON_LENGTH = 60;
-  const END_CAP_THICKNESS = 40;
-  const GLAND_THICKNESS = 45;
-  const ROD_EXTENSION_WHEN_RETRACTED = 22;
-
-  const defaultBarrelLength = specs.stroke + MIN_PISTON_LENGTH + 20; 
+  // Logical chamber length = Piston + Stroke
+  const chamberLength = PISTON_LENGTH + specs.stroke;
+  // Total barrel length including end pieces
+  const defaultBarrelLength = chamberLength + END_CAP_THICKNESS + GLAND_THICKNESS;
+  
+  // Base retracted length center-to-center
   const defaultRetractedLength = rearOffset + defaultBarrelLength + frontOffset;
 
-  let barrelLength = defaultBarrelLength;
   let retractedLength = defaultRetractedLength;
-
-  if (specs.customClosedLength !== null && specs.customClosedLength > 0) {
+  if (specs.customClosedLength !== null && specs.customClosedLength > defaultRetractedLength) {
       retractedLength = specs.customClosedLength;
-      barrelLength = retractedLength - rearOffset - frontOffset;
-      const minRequired = specs.stroke + MIN_PISTON_LENGTH + 20;
-      if (barrelLength < minRequired) {
-          barrelLength = minRequired;
-          retractedLength = rearOffset + barrelLength + frontOffset;
-      }
   }
 
   // Visualization Setup
   const sheetWidth = 1400;
   const sheetHeight = 800;
-  const startX = (sheetWidth - retractedLength - ROD_EXTENSION_WHEN_RETRACTED) / 2;
+  
+  const currentExtensionMm = specs.stroke * (extension / 100);
+
+  const barrelOuterDia = specs.bore + (WALL_THICKNESS * 2);
+  const totalVisLength = retractedLength + currentExtensionMm + ROD_EXTENSION_WHEN_RETRACTED;
+  const startX = (sheetWidth - totalVisLength) / 2;
   const centerY = sheetHeight / 2;
 
-  const barrelStart = startX + rearOffset;
-  const barrelEnd = barrelStart + barrelLength;
-  const rodEndAnchor = startX + retractedLength + ROD_EXTENSION_WHEN_RETRACTED;
-  const rodConnectX = rodEndAnchor - frontOffset;
+  const centerRear = startX;
+  const centerFront = startX + retractedLength + currentExtensionMm;
+  
+  const barrelStart = centerRear + rearOffset;
+  const barrelEnd = barrelStart + defaultBarrelLength;
+  
+  const chamberStart = barrelStart + END_CAP_THICKNESS;
+  const chamberEnd = barrelEnd - GLAND_THICKNESS;
 
-  const portDist = 45;
+  const pistonStart = chamberStart + currentExtensionMm;
+  const pistonEnd = pistonStart + PISTON_LENGTH;
+
+  // Rod start point must be end of piston
+  const rodStartX = pistonEnd;
+  // Adjusted rod end: stops at the interface with the front mount (visual radius)
+  const rodEndX = centerFront - frontMountVisualRadius;
+
+  // Port placement adjusted inward from edges to avoid weld seams
+  const portDistFromEdge = 75;
 
   const handleBoreChange = (newBore: number) => {
       let newRod = specs.rod;
@@ -290,107 +323,97 @@ export const CylinderDesigner2D: React.FC = () => {
         keywords={['2D CAD', 'Section View', 'Hydraulic Blueprint', 'Cylinder Drawing']}
       />
 
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-[#0e1621] dark:bg-gray-900">
         
         {/* --- SIDEBAR --- */}
-        <div className="w-full lg:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-6 z-10 shadow-lg print:hidden">
-            <h1 className="text-xl font-bold text-primary dark:text-primary-light mb-6 flex items-center gap-2">
+        <div className="w-full lg:w-80 bg-[#162131] border-r border-white/10 overflow-y-auto p-6 z-10 shadow-lg print:hidden text-white">
+            <h1 className="text-xl font-bold text-primary-light mb-6 flex items-center gap-2">
                 <Ruler className="text-accent" /> Draft Refinement
             </h1>
 
             <div className="space-y-6">
-                {/* Section 1: Specs */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Settings2 className="w-4 h-4" /> Component Geometry
                     </h3>
                     <SliderControl label="Bore Ø" value={specs.bore} onChange={handleBoreChange} min={30} max={300} step={5} />
                     <SliderControl label="Rod Ø" value={specs.rod} onChange={(v) => setSpecs({...specs, rod: v})} min={10} max={Math.max(10, specs.bore - 10)} step={5} />
                     <SliderControl label="Stroke" value={specs.stroke} onChange={(v) => setSpecs({...specs, stroke: v, productLabel: `HC-${specs.bore}-${v}`})} min={50} max={2000} step={10} />
                     
-                    <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Mounting Dimensions</h4>
-                        <SliderControl label="Pin Ø" value={specs.pinDia} onChange={(v) => setSpecs({...specs, pinDia: v})} min={10} max={100} step={1} />
+                    <div className="pt-2 border-t border-white/5">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">Mounting Dimensions</h4>
+                        <SliderControl label="Pin Ø" value={specs.pinDia} onChange={(v) => setSpecs({...specs, pinDia: v})} min={10} max={100} step={0.5} />
                         <SliderControl label="Eye Outer Ø" value={specs.eyeDia} onChange={(v) => setSpecs({...specs, eyeDia: v})} min={20} max={200} step={1} />
                     </div>
 
-                    <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Closed Length (E)</label>
+                    <div className="pt-2 border-t border-white/5">
+                        <label className="block text-sm font-bold text-gray-300 mb-2">Closed Length (E)</label>
                         <div className="flex items-center gap-2">
-                            <input type="number" value={specs.customClosedLength ?? ''} placeholder={defaultRetractedLength.toFixed(1)} onChange={(e) => {
+                            <input type="number" value={specs.customClosedLength ?? ''} placeholder={retractedLength.toFixed(1)} onChange={(e) => {
                                 const val = parseFloat(e.target.value);
                                 setSpecs({...specs, customClosedLength: (isNaN(val) || val <= 0) ? null : val});
-                            }} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-all" />
-                            <span className="text-xs font-bold text-gray-400">mm</span>
+                            }} className="w-full p-2 border border-white/10 rounded-md text-sm bg-black/20 text-white focus:ring-2 focus:ring-primary outline-none transition-all" />
+                            <span className="text-xs font-bold text-gray-500">mm</span>
                         </div>
                     </div>
                 </div>
 
-                <hr className="dark:border-gray-700" />
+                <div className="pt-2 border-t border-white/5">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2"><Maximize2 className="w-4 h-4" /> Visualization</h4>
+                    <SliderControl label="Extension" value={extension} onChange={setExtension} min={0} max={100} step={1} suffix="%" />
+                </div>
 
-                {/* Section 2: Branding & Labels */}
+                <hr className="border-white/5" />
+
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Tag className="w-4 h-4" /> Identification
                     </h3>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product ID</label>
-                        <input 
-                            type="text" 
-                            value={specs.productLabel} 
-                            onChange={(e) => setSpecs({...specs, productLabel: e.target.value})}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary outline-none"
-                            placeholder="e.g. HC-80-400"
-                        />
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Product ID</label>
+                        <input type="text" value={specs.productLabel} onChange={(e) => setSpecs({...specs, productLabel: e.target.value})} className="w-full p-2 border border-white/10 rounded bg-black/20 text-white text-sm focus:ring-2 focus:ring-primary outline-none" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port Size</label>
-                        <input 
-                            type="text" 
-                            value={specs.portLabel} 
-                            onChange={(e) => setSpecs({...specs, portLabel: e.target.value})}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary outline-none"
-                            placeholder='e.g. G 3/8"'
-                        />
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Port Size</label>
+                        <input type="text" value={specs.portLabel} onChange={(e) => setSpecs({...specs, portLabel: e.target.value})} className="w-full p-2 border border-white/10 rounded bg-black/20 text-white text-sm focus:ring-2 focus:ring-primary outline-none" />
                     </div>
                 </div>
 
-                <hr className="dark:border-gray-700" />
+                <hr className="border-white/5" />
 
-                {/* Section 3: Mountings */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Anchor className="w-4 h-4" /> Mount Types
                     </h3>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rear Mount</label>
-                        <select value={specs.rearMount} onChange={(e) => setSpecs({...specs, rearMount: e.target.value as MountType})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary outline-none">
-                            {['Eye', 'Point', 'Fork', 'Flange', 'Trunnion', 'Thread'].map(t => <option key={t} value={t}>{t}</option>)}
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Rear Mount</label>
+                        <select value={specs.rearMount} onChange={(e) => setSpecs({...specs, rearMount: e.target.value as MountType})} className="w-full p-2 border border-white/10 rounded bg-black/20 text-white text-sm focus:ring-2 focus:ring-primary outline-none">
+                            {['Hole', 'Point', 'Fork', 'Flange', 'Trunnion', 'Thread'].map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Front Mount</label>
-                        <select value={specs.frontMount} onChange={(e) => setSpecs({...specs, frontMount: e.target.value as MountType})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary outline-none">
-                            {['Eye', 'Point', 'Fork', 'Flange', 'Thread'].map(t => <option key={t} value={t}>{t}</option>)}
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Front Mount</label>
+                        <select value={specs.frontMount} onChange={(e) => setSpecs({...specs, frontMount: e.target.value as MountType})} className="w-full p-2 border border-white/10 rounded bg-black/20 text-white text-sm focus:ring-2 focus:ring-primary outline-none">
+                            {['Hole', 'Point', 'Fork', 'Flange', 'Thread'].map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
                 </div>
 
-                <button onClick={() => window.print()} className="w-full bg-primary text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-primary-dark shadow-md transition-all active:scale-95">
+                <button onClick={() => window.print()} className="w-full bg-[#0a6a94] text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-primary-dark shadow-md transition-all active:scale-95">
                     <Printer size={18} /> Print Blueprint
                 </button>
             </div>
         </div>
 
         {/* --- DRAWING CANVAS --- */}
-        <div className="flex-1 relative bg-[#f8f9fa] dark:bg-gray-950 flex items-center justify-center overflow-hidden">
-            <div className="absolute top-4 right-4 flex gap-2 bg-white dark:bg-gray-800 shadow-md rounded-lg p-2 z-20 print:hidden">
-                <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-300"><ZoomOut size={20} /></button>
-                <button onClick={() => setZoom(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-300"><RefreshCw size={20} /></button>
-                <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-300"><ZoomIn size={20} /></button>
+        <div className="flex-1 relative bg-[#05080b] flex items-center justify-center overflow-hidden">
+            <div className="absolute top-4 right-4 flex gap-2 bg-[#162131] shadow-md rounded-lg p-2 z-20 print:hidden border border-white/10">
+                <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-white/5 rounded text-gray-300"><ZoomOut size={20} /></button>
+                <button onClick={() => setZoom(1)} className="p-2 hover:bg-white/5 rounded text-gray-300"><RefreshCw size={20} /></button>
+                <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="p-2 hover:bg-white/5 rounded text-gray-300"><ZoomIn size={20} /></button>
             </div>
 
-            <div className="bg-white shadow-2xl border border-gray-300 dark:border-gray-700 origin-center transition-transform" style={{ transform: `scale(${zoom})`, width: '1200px', height: '675px' }}>
+            <div className="bg-white shadow-2xl border border-white/5 origin-center transition-transform" style={{ transform: `scale(${zoom})`, width: '1200px', height: '675px' }}>
                 <svg ref={svgRef} viewBox={`0 0 ${sheetWidth} ${sheetHeight}`} className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <marker id="arrow-black" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#000" /></marker>
@@ -401,126 +424,135 @@ export const CylinderDesigner2D: React.FC = () => {
                         <pattern id="hatch-rod" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#ccc" strokeWidth="2" /></pattern>
                     </defs>
 
-                    {/* Centered Main Title */}
                     <text x={sheetWidth / 2} y={centerY - 220} textAnchor="middle" className="text-2xl font-bold fill-[#0a6a94] uppercase tracking-widest">Hydraulic Cylinder</text>
 
-                    {/* Section View Drawing */}
                     <g>
-                        {/* Rear End Block Section */}
+                        {/* 1. Cylinder Barrel & Chamber */}
                         <SectionHatch x={barrelStart} y={centerY - barrelOuterDia/2} width={END_CAP_THICKNESS} height={barrelOuterDia} />
+                        <SectionHatch x={chamberStart} y={centerY - barrelOuterDia/2} width={chamberLength} height={WALL_THICKNESS} />
+                        <SectionHatch x={chamberStart} y={centerY + specs.bore/2} width={chamberLength} height={WALL_THICKNESS} />
+                        <rect x={chamberStart} y={centerY - specs.bore/2} width={chamberLength} height={specs.bore} fill="none" stroke="black" strokeWidth="1" />
+                        <SectionHatch x={barrelEnd - GLAND_THICKNESS} y={centerY - barrelOuterDia/2} width={GLAND_THICKNESS} height={barrelOuterDia} />
                         
-                        {/* Barrel Tube (Top & Bottom Walls) */}
-                        <SectionHatch x={barrelStart + END_CAP_THICKNESS} y={centerY - barrelOuterDia/2} width={barrelLength - END_CAP_THICKNESS - GLAND_THICKNESS} height={WALL_THICKNESS} />
-                        <SectionHatch x={barrelStart + END_CAP_THICKNESS} y={centerY + specs.bore/2} width={barrelLength - END_CAP_THICKNESS - GLAND_THICKNESS} height={WALL_THICKNESS} />
-                        
-                        {/* Internal Chamber Outline */}
-                        <rect x={barrelStart + END_CAP_THICKNESS} y={centerY - specs.bore/2} width={barrelLength - END_CAP_THICKNESS - GLAND_THICKNESS} height={specs.bore} fill="none" stroke="black" strokeWidth="1" />
-
-                        {/* Piston inside */}
-                        <g transform={`translate(${barrelStart + END_CAP_THICKNESS + 10}, ${centerY - specs.bore/2})`}>
-                            <rect x={0} y={0} width={MIN_PISTON_LENGTH} height={specs.bore} fill="white" stroke="black" strokeWidth="1.5" />
+                        {/* 2. Piston Geometry */}
+                        <g transform={`translate(${pistonStart}, ${centerY - specs.bore/2})`}>
+                            <rect x={0} y={0} width={PISTON_LENGTH} height={specs.bore} fill="white" stroke="black" strokeWidth="1.5" />
                             {/* Piston Seals */}
-                            <rect x={10} y={0} width={10} height={specs.bore} fill="#333" />
-                            <rect x={MIN_PISTON_LENGTH - 20} y={0} width={10} height={specs.bore} fill="#333" />
+                            <rect x={15} y={0} width={10} height={specs.bore} fill="#333" />
+                            <rect x={PISTON_LENGTH - 25} y={0} width={10} height={specs.bore} fill="#333" />
                         </g>
 
-                        {/* Front Gland Section */}
-                        <SectionHatch x={barrelEnd - GLAND_THICKNESS} y={centerY - barrelOuterDia/2} width={GLAND_THICKNESS} height={barrelOuterDia} />
-                        {/* Gland bore hole for rod (Clearance) */}
+                        {/* 3. Rod Geometry - MUST start at pistonEnd */}
+                        <rect x={rodStartX} y={centerY - specs.rod/2} width={rodEndX - rodStartX} height={specs.rod} fill="url(#hatch-rod)" stroke="black" strokeWidth="1.2" />
+                        {/* Gland rod clearance hole */}
                         <rect x={barrelEnd - GLAND_THICKNESS} y={centerY - specs.rod/2 - 2} width={GLAND_THICKNESS} height={specs.rod + 4} fill="white" stroke="none" />
-                        
-                        {/* Piston Rod */}
-                        <rect x={barrelStart + END_CAP_THICKNESS + 10 + MIN_PISTON_LENGTH} y={centerY - specs.rod/2} width={rodConnectX - (barrelStart + END_CAP_THICKNESS + 10 + MIN_PISTON_LENGTH)} height={specs.rod} fill="url(#hatch-rod)" stroke="black" strokeWidth="1" />
 
-                        {/* Product Label */}
-                        <g transform={`translate(${barrelStart + barrelLength/2 - 40}, ${centerY - barrelOuterDia/2 + 2})`}>
+                        {/* 4. Details: Ports & Label */}
+                        <g transform={`translate(${barrelStart + portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
+                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
+                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
+                        </g>
+                        <g transform={`translate(${barrelEnd - portDistFromEdge}, ${centerY - barrelOuterDia/2})`}>
+                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
+                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
+                        </g>
+
+                        <g transform={`translate(${barrelStart + defaultBarrelLength/2 - 40}, ${centerY - barrelOuterDia/2 + 2})`}>
                             <rect x={0} y={0} width={80} height={WALL_THICKNESS - 4} fill="#eee" stroke="black" strokeWidth="0.5" />
                             <text x={40} y={(WALL_THICKNESS - 4)/2} textAnchor="middle" dominantBaseline="middle" className="text-[5px] font-bold fill-gray-800 tracking-wider">HYDROFORCE • {specs.productLabel}</text>
                         </g>
 
-                        {/* Ports */}
-                        <g transform={`translate(${barrelStart + portDist}, ${centerY - barrelOuterDia/2})`}>
-                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
-                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
-                        </g>
-                        <g transform={`translate(${barrelEnd - portDist}, ${centerY - barrelOuterDia/2})`}>
-                           <rect x={-10} y={-10} width={20} height={10} fill="white" stroke="black" />
-                           <text x={0} y={-15} textAnchor="middle" className="text-[10px] font-bold">{specs.portLabel}</text>
-                        </g>
-
-                        {/* Mounts - Using EyeDia and PinDia */}
-                        <MountDraw type={specs.rearMount} x={startX} y={centerY} radius={rearMountVisualRadius} pinRadius={specs.pinDia/2} length={rearOffset} />
-                        <MountDraw type={specs.frontMount} x={rodEndAnchor} y={centerY} radius={frontMountVisualRadius} pinRadius={specs.pinDia/2} length={frontOffset} isFront />
+                        {/* 5. Mounts */}
+                        <MountDraw type={specs.rearMount} x={centerRear} y={centerY} radius={rearMountVisualRadius} pinRadius={specs.pinDia/2} length={rearOffset} />
+                        {/* Front Mount flipped (isFront={false}) to orient outwards from rod end */}
+                        <MountDraw type={specs.frontMount} x={centerFront} y={centerY} radius={frontMountVisualRadius} pinRadius={specs.pinDia/2} length={frontOffset} isFront={false} />
 
                         {/* Centerline */}
-                        <line x1={startX - 50} y1={centerY} x2={rodEndAnchor + 50} y2={centerY} stroke="#666" strokeWidth="0.5" strokeDasharray="15,4,2,4" />
+                        <line x1={centerRear - 50} y1={centerY} x2={centerFront + ROD_EXTENSION_WHEN_RETRACTED + 50} y2={centerY} stroke="#666" strokeWidth="0.5" strokeDasharray="15,4,2,4" />
 
-                        {/* DIMENSIONS */}
+                        {/* 6. DIMENSIONS (Attached directly to part boundaries) */}
                         
-                        {/* Bore Diameter */}
+                        {/* Bore Ø - Positioned inside chamber */}
                         <DimensionLine 
-                            x1={barrelStart + barrelLength/2} 
+                            x1={chamberStart + 30} 
                             y1={centerY - specs.bore/2} 
-                            x2={barrelStart + barrelLength/2} 
+                            x2={chamberStart + 30} 
                             y2={centerY + specs.bore/2} 
                             vertical 
                             text={`${specs.bore.toFixed(1)}`} 
-                            offset={-25} 
-                            color="red"
-                            textColor="red"
+                            offset={-50} 
+                            color="red" 
+                            textColor="red" 
                         />
 
-                        {/* Rod Diameter */}
+                        {/* Rod Ø - Positioned on the rod shaft */}
                         <DimensionLine 
-                            x1={rodConnectX - 40} 
+                            x1={rodStartX + (rodEndX - rodStartX)/2} 
                             y1={centerY - specs.rod/2} 
-                            x2={rodConnectX - 40} 
+                            x2={rodStartX + (rodEndX - rodStartX)/2} 
                             y2={centerY + specs.rod/2} 
                             vertical 
                             text={`${specs.rod.toFixed(1)}`} 
-                            offset={-25} 
-                            color="red"
-                            textColor="red"
+                            offset={25} 
+                            color="red" 
+                            textColor="red" 
                         />
 
-                        {/* Outer Tube Diameter */}
-                        <DimensionLine x1={barrelStart + barrelLength/2} y1={centerY - barrelOuterDia/2} x2={barrelStart + barrelLength/2} y2={centerY + barrelOuterDia/2} vertical text={`${barrelOuterDia.toFixed(1)}`} offset={35} />
-
-                        {/* Rod extension beyond barrel */}
-                        <DimensionLine x1={barrelEnd} y1={centerY + barrelOuterDia/2 + 10} x2={rodEndAnchor} y2={centerY + barrelOuterDia/2 + 10} text={`${ROD_EXTENSION_WHEN_RETRACTED.toFixed(0)}`} offset={25} color="red" textColor="red" />
-
-                        {/* Stroke */}
+                        {/* Outer Barrel Ø */}
                         <DimensionLine 
-                            x1={barrelStart + END_CAP_THICKNESS} 
+                            x1={barrelStart + defaultBarrelLength/2} 
+                            y1={centerY - barrelOuterDia/2} 
+                            x2={barrelStart + defaultBarrelLength/2} 
+                            y2={centerY + barrelOuterDia/2} 
+                            vertical 
+                            text={`${barrelOuterDia.toFixed(1)}`} 
+                            offset={80} 
+                        />
+
+                        {/* Rod extension (22mm) */}
+                        <DimensionLine 
+                            x1={barrelEnd} 
+                            y1={centerY + barrelOuterDia/2} 
+                            x2={centerFront} 
+                            y2={centerY + barrelOuterDia/2} 
+                            text={`${ROD_EXTENSION_WHEN_RETRACTED.toFixed(0)}`} 
+                            offset={40} 
+                            color="red" 
+                            textColor="red" 
+                        />
+
+                        {/* Stroke (Static Capacity Measurement) */}
+                        <DimensionLine 
+                            x1={chamberStart + PISTON_LENGTH} 
                             y1={centerY + specs.bore/2} 
-                            x2={barrelEnd - GLAND_THICKNESS} 
+                            x2={chamberEnd} 
                             y2={centerY + specs.bore/2} 
                             text={`${specs.stroke.toFixed(0)}`} 
-                            offset={35} 
+                            offset={50} 
                             color="red" 
                             textColor="red" 
                         />
 
-                        {/* Closed Length Center-to-Center */}
+                        {/* Current Length (Center-to-Center) */}
                         <DimensionLine 
-                            x1={startX} 
-                            y1={centerY + barrelOuterDia/2 + 65} 
-                            x2={rodEndAnchor} 
-                            y2={centerY + barrelOuterDia/2 + 65} 
-                            text={`${retractedLength.toFixed(1)}`} 
-                            offset={30} 
+                            x1={centerRear} 
+                            y1={centerY} 
+                            x2={centerFront} 
+                            y2={centerY} 
+                            text={`${(retractedLength + currentExtensionMm).toFixed(1)}`} 
+                            offset={180} 
                             color="red" 
                             textColor="red" 
                         />
 
-                        {/* Pin Hole Dimensions */}
+                        {/* Pin Ø Dimension */}
                         <DimensionLine 
-                            x1={startX - specs.pinDia/2} 
-                            y1={centerY - 80} 
-                            x2={startX + specs.pinDia/2} 
-                            y2={centerY - 80} 
-                            text={`${specs.pinDia.toFixed(0)}`} 
-                            offset={-20} 
+                            x1={centerRear - specs.pinDia/2} 
+                            y1={centerY} 
+                            x2={centerRear + specs.pinDia/2} 
+                            y2={centerY} 
+                            text={`${specs.pinDia.toFixed(1)}`} 
+                            offset={-120} 
                         />
                     </g>
 
