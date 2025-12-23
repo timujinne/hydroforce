@@ -499,16 +499,18 @@ export const CylinderDesigner2D: React.FC = () => {
                         {/* 6. DIMENSIONS (Attached directly to part boundaries) */}
                         
                         {/* General Size (Total Length) - Top Dimension */}
-                        <DimensionLine 
-                            x1={generalStart} 
-                            y1={centerY} 
-                            x2={generalEnd} 
-                            y2={centerY} 
-                            text={`${generalSize.toFixed(1)}`} 
-                            offset={-180} 
-                            color="red" 
-                            textColor="red" 
-                        />
+                        {extension === 0 && (
+                            <DimensionLine 
+                                x1={generalStart} 
+                                y1={centerY} 
+                                x2={generalEnd} 
+                                y2={centerY} 
+                                text={`${generalSize.toFixed(1)}`} 
+                                offset={-180} 
+                                color="red" 
+                                textColor="red" 
+                            />
+                        )}
 
                         {/* Bore Ø - Positioned inside chamber */}
                         <DimensionLine 
@@ -548,28 +550,32 @@ export const CylinderDesigner2D: React.FC = () => {
                         />
 
                         {/* Stroke (Static Capacity Measurement) */}
-                        <DimensionLine 
-                            x1={chamberStart + PISTON_LENGTH} 
-                            y1={centerY + specs.bore/2} 
-                            x2={chamberEnd} 
-                            y2={centerY + specs.bore/2} 
-                            text={`${specs.stroke.toFixed(0)}`} 
-                            offset={50} 
-                            color="red" 
-                            textColor="red" 
-                        />
+                        {extension === 0 && (
+                            <DimensionLine 
+                                x1={chamberStart + PISTON_LENGTH} 
+                                y1={centerY + specs.bore/2} 
+                                x2={chamberEnd} 
+                                y2={centerY + specs.bore/2} 
+                                text={`${specs.stroke.toFixed(0)}`} 
+                                offset={50} 
+                                color="red" 
+                                textColor="red" 
+                            />
+                        )}
 
                         {/* Current Length (Center-to-Center) */}
-                        <DimensionLine 
-                            x1={centerRear} 
-                            y1={centerY} 
-                            x2={centerFront} 
-                            y2={centerY} 
-                            text={`${(retractedLength + currentExtensionMm).toFixed(1)}`} 
-                            offset={180} 
-                            color="red" 
-                            textColor="red" 
-                        />
+                        {extension === 0 && (
+                            <DimensionLine 
+                                x1={centerRear} 
+                                y1={centerY} 
+                                x2={centerFront} 
+                                y2={centerY} 
+                                text={`${(retractedLength + currentExtensionMm).toFixed(1)}`} 
+                                offset={180} 
+                                color="red" 
+                                textColor="red" 
+                            />
+                        )}
 
                         {/* Pin Ø Dimension */}
                         <DimensionLine 
