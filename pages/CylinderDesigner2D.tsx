@@ -474,9 +474,9 @@ export const CylinderDesigner2D: React.FC = () => {
                         
                         {/* Bore Ø - Positioned inside chamber */}
                         <DimensionLine 
-                            x1={chamberStart + 30} 
+                            x1={chamberStart + 180} 
                             y1={centerY - specs.bore/2} 
-                            x2={chamberStart + 30} 
+                            x2={chamberStart + 180} 
                             y2={centerY + specs.bore/2} 
                             vertical 
                             text={`${specs.bore.toFixed(1)}`} 
@@ -487,9 +487,9 @@ export const CylinderDesigner2D: React.FC = () => {
 
                         {/* Rod Ø - Positioned on the rod shaft */}
                         <DimensionLine 
-                            x1={rodStartX + (rodEndX - rodStartX)/2} 
+                            x1={rodStartX + (rodEndX - rodStartX) * 0.75} 
                             y1={centerY - specs.rod/2} 
-                            x2={rodStartX + (rodEndX - rodStartX)/2} 
+                            x2={rodStartX + (rodEndX - rodStartX) * 0.75} 
                             y2={centerY + specs.rod/2} 
                             vertical 
                             text={`${specs.rod.toFixed(1)}`} 
